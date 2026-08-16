@@ -35,6 +35,7 @@ import { ObjectStorageCard } from "./settings/ObjectStorageCard";
 import { AiModelCard } from "./settings/AiModelCard";
 import { AiPromptsCard } from "./settings/AiPromptsCard";
 import { AiGenerationPreferenceCard } from "./settings/AiGenerationPreferenceCard";
+import { AiTagSuggestionPromptCard } from "./settings/AiTagSuggestionPromptCard";
 import { ThemeToggle } from "./ThemeToggle";
 import type { AuthUser } from "@edgeever/shared";
 import { contentEnterMotion } from "@/lib/motion";
@@ -243,6 +244,7 @@ export const SettingsPane = ({
         return (
           <SettingsGroup>
             <AiGenerationPreferenceCard />
+            <AiTagSuggestionPromptCard />
             {isOwner ? <ObjectStorageCard demoMode={demoMode} /> : null}
             {canClearLocalData ? <DesktopLocalDataCard /> : null}
           </SettingsGroup>
