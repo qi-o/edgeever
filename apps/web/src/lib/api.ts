@@ -431,6 +431,23 @@ const request = async <T>(path: string, init?: RequestInit): Promise<T> => {
   return body;
 };
 
+const requestArrayBuffer = async (path: string) => {
+  const isDesktop = Boolean(typeof window !== "undefined" && window.edgeeverDesktop?.isAvailable);
+  const sessionToken = isDesktop ? getDesktopSessionToken() : undefined;
+  const headers = new Headers();
+  if (sessionToken) headers.set("Authorization", `Bearer ${sessionToken}`);
+  const response = await fetch(`${getConfiguredDesktopApiBaseUrl()}${path}`, {
+    credentials: "include",
+    headers,
+  });
+  if (!response.ok) {
+    const body = await response.json().catch(() => null) as { error?: { message?: string } } | null;
+    if (response.status === 401) void notifyUnauthorized(isDesktop, sessionToken);
+    throw new ApiRequestError(body?.error?.message || response.statusText || "Binary download failed", response.status);
+  }
+  return response.arrayBuffer();
+};
+
 export const api = {
   getSession: () => request<AuthSession>("/api/v1/auth/session"),
 
@@ -912,6 +929,15 @@ export const api = {
 
     return response.blob();
   },
+
+  downloadGithubPluginAsset: (
+    owner: string,
+    repository: string,
+    assetId: number,
+    assetName: "manifest.json" | "main.js" | "styles.css",
+  ) => requestArrayBuffer(
+    `/api/v1/plugins/github/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}/assets/${assetId}/${encodeURIComponent(assetName)}`,
+  ),
 
   uploadMemoResource: (memoId: string, file: File) => {
     const form = new FormData();

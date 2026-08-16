@@ -90,6 +90,7 @@ import { useWorkspaceRoute } from "@/hooks/useWorkspaceRoute";
 import { useWorkspacePreferences } from "@/hooks/useWorkspacePreferences";
 import { useWorkspaceSelection } from "@/hooks/useWorkspaceSelection";
 import { useWorkspaceQueuedSync } from "@/hooks/useWorkspaceQueuedSync";
+import { EdgeEverPluginHost } from "@/lib/plugins/plugin-host";
 
 const isDesktopViewport = () => window.matchMedia("(min-width: 1024px)").matches;
 const PULL_TO_REFRESH_TRIGGER_PX = 72;
@@ -138,6 +139,7 @@ const getVerticalScrollContainer = (target: EventTarget | null) => {
 const EditorPane = lazy(() => import("./EditorPane").then((module) => ({ default: module.EditorPane })));
 const AssetsPane = lazy(() => import("./AssetsPane").then((module) => ({ default: module.AssetsPane })));
 const SettingsPane = lazy(() => import("./SettingsPane").then((module) => ({ default: module.SettingsPane })));
+const PluginMarketplacePane = lazy(() => import("./PluginMarketplacePane").then((module) => ({ default: module.PluginMarketplacePane })));
 const NotebookPane = lazy(() => import("./NotebookPane").then((module) => ({ default: module.NotebookPane })));
 const EvernoteImportGuidePane = lazy(() =>
   import("./EvernoteImportGuidePane").then((module) => ({ default: module.EvernoteImportGuidePane }))
@@ -665,6 +667,7 @@ export const WorkspaceApp = ({
     navigateHome: navigateWorkspaceHome,
     navigateTrash: navigateWorkspaceTrash,
     navigateSettings: navigateWorkspaceSettings,
+    navigatePlugins: navigateWorkspacePlugins,
     navigateTemplates: navigateWorkspaceTemplates,
     navigateAiPrompts: navigateWorkspaceAiPrompts,
   } = useWorkspaceRoute();
@@ -674,11 +677,12 @@ export const WorkspaceApp = ({
   );
   const repository = useMemo(() => createRepository(localDataScope), [localDataScope]);
   const isInitialSettingsRoute = route.isSettings;
+  const isInitialPluginsRoute = route.isPlugins;
   const isInitialTemplatesRoute = route.isTemplates;
   const isInitialAiPromptsRoute = route.isAiPrompts;
   const isInitialMobileEditorReturn = Boolean(route.mobileEditorReturnMemoId);
   const isTrashRoute = route.isTrash;
-  const [activePane, setActivePane] = useState<Pane>(() => ((isInitialSettingsRoute || isInitialTemplatesRoute || isInitialAiPromptsRoute) && !isInitialMobileEditorReturn ? "editor" : "memos"));
+  const [activePane, setActivePane] = useState<Pane>(() => ((isInitialSettingsRoute || isInitialPluginsRoute || isInitialTemplatesRoute || isInitialAiPromptsRoute) && !isInitialMobileEditorReturn ? "editor" : "memos"));
   const [memoView, setMemoView] = useState<MemoView>(() => (isTrashRoute ? "trash" : "notebook"));
   const {
     beginMemoSelection,
@@ -708,6 +712,26 @@ export const WorkspaceApp = ({
   const [notebookDeleteConfirmation, setNotebookDeleteConfirmation] = useState<Notebook | null>(null);
   const [appNoticeDialog, setAppNoticeDialog] = useState<AppNoticeDialogState | null>(null);
   const [demoResetConfirmationOpen, setDemoResetConfirmationOpen] = useState(false);
+  const pluginHost = useMemo(() => new EdgeEverPluginHost({
+    repository,
+    scope: localDataScope,
+    onNotice: (message) => setAppNoticeDialog({ title: t("plugins.noticeTitle"), description: message }),
+    onWorkspaceChanged: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["memos"] }),
+        queryClient.invalidateQueries({ queryKey: ["memo"] }),
+        queryClient.invalidateQueries({ queryKey: ["notebooks"] }),
+        queryClient.invalidateQueries({ queryKey: ["tags"] }),
+      ]);
+    },
+  }), [localDataScope, queryClient, repository, t]);
+
+  useEffect(() => {
+    void pluginHost.activateEnabled();
+    return () => {
+      void pluginHost.dispose();
+    };
+  }, [pluginHost]);
 
   const resetDemoMutation = useMutation({
     mutationFn: () => api.resetDemo(),
@@ -747,9 +771,11 @@ export const WorkspaceApp = ({
     shortcutSettings,
     syncIntervalMs,
   } = useWorkspacePreferences();
-  const [rightView, setRightView] = useState<"editor" | "settings" | "assets" | "tags" | "templates" | "ai-prompts" | "evernote-migration">(() =>
+  const [rightView, setRightView] = useState<"editor" | "settings" | "plugins" | "assets" | "tags" | "templates" | "ai-prompts" | "evernote-migration">(() =>
     isInitialSettingsRoute
       ? "settings"
+      : isInitialPluginsRoute
+        ? "plugins"
       : isInitialTemplatesRoute
         ? "templates"
         : isInitialAiPromptsRoute
@@ -1083,6 +1109,14 @@ export const WorkspaceApp = ({
       return;
     }
 
+    if (route.isPlugins) {
+      skipNextHomeRouteSyncRef.current = false;
+      setRightView("plugins");
+      setMobileBottomNavActive("home");
+      setActivePane("editor");
+      return;
+    }
+
     if (route.isTemplates) {
       skipNextHomeRouteSyncRef.current = false;
       setRightView("templates");
@@ -1107,7 +1141,7 @@ export const WorkspaceApp = ({
     setMemoView(isTrashRoute ? "trash" : "notebook");
     setRightView("editor");
     setMobileBottomNavActive("home");
-  }, [isTrashRoute, route.isSettings, route.isTemplates, route.isAiPrompts]);
+  }, [isTrashRoute, route.isSettings, route.isPlugins, route.isTemplates, route.isAiPrompts]);
 
   useEffect(() => {
     if (window.edgeeverDesktop?.isAvailable) {
@@ -2211,6 +2245,14 @@ export const WorkspaceApp = ({
     setActivePane("editor");
   };
 
+  const handleOpenPluginManager = () => {
+    clearHiddenMobileSearch();
+    navigateWorkspacePlugins();
+    setRightView("plugins");
+    setMobileBottomNavActive("home");
+    setActivePane("editor");
+  };
+
   const handleCloseAssets = () => {
     navigateWorkspaceHome();
     setRightView("editor");
@@ -2231,6 +2273,15 @@ export const WorkspaceApp = ({
   };
 
   const handleCloseSettings = () => {
+    navigateWorkspaceHome();
+    setRightView("editor");
+    setMobileBottomNavActive("home");
+    if (!isDesktopViewport()) {
+      setActivePane("memos");
+    }
+  };
+
+  const handleClosePluginMarketplace = () => {
     navigateWorkspaceHome();
     setRightView("editor");
     setMobileBottomNavActive("home");
@@ -2358,6 +2409,11 @@ export const WorkspaceApp = ({
 
     if (rightView === "settings") {
       handleCloseSettings();
+      return true;
+    }
+
+    if (rightView === "plugins") {
+      handleClosePluginMarketplace();
       return true;
     }
 
@@ -2601,6 +2657,8 @@ export const WorkspaceApp = ({
   const rightPaneLoadingLabel =
     rightView === "settings"
       ? t("workspace.loading.settings")
+      : rightView === "plugins"
+        ? t("plugins.marketplace.loading")
       : rightView === "assets"
         ? t("workspace.loading.assets")
         : rightView === "tags"
@@ -2701,6 +2759,7 @@ export const WorkspaceApp = ({
                   onOpenTags={handleOpenTags}
                   onOpenTemplates={handleOpenTemplates}
                   onOpenAiPrompts={handleOpenAiPrompts}
+                  onOpenPluginMarketplace={handleOpenPluginManager}
                   onOpenSettings={handleOpenSettings}
                   onOpenTrash={() => {
                     navigateWorkspaceTrash();
@@ -2887,7 +2946,11 @@ export const WorkspaceApp = ({
                     refreshWorkspaceAfterImport={async () => {
                       await refreshWorkspaceFromServer("manual");
                     }}
+                    pluginHost={pluginHost}
+                    onOpenPluginMarketplace={handleOpenPluginManager}
                   />
+                  ) : rightView === "plugins" ? (
+                    <PluginMarketplacePane host={pluginHost} onClose={handleClosePluginMarketplace} />
                   ) : rightView === "assets" ? (
                     <AssetsPane onClose={handleCloseAssets} repository={repository} />
                   ) : rightView === "tags" ? (
@@ -2913,8 +2976,10 @@ export const WorkspaceApp = ({
                     <EvernoteImportGuidePane onClose={() => setRightView("settings")} />
                   ) : (
                     <EditorPane
-                    memo={selectedMemo}
-                    repository={repository}
+                      memo={selectedMemo}
+                      repository={repository}
+                      pluginHost={pluginHost}
+                      onOpenPluginManager={handleOpenPluginManager}
                     onOpenAiPrompts={handleOpenAiPrompts}
                     desktopFocusMode={desktopFocusModeActive}
                     onToggleDesktopFocusMode={toggleDesktopFocusMode}
