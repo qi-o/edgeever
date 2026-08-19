@@ -539,6 +539,7 @@ export const zhCN = {
     append: "追加到笔记",
     replace: "替换笔记",
     replaceSelection: "接受并替换选中内容",
+    applyFailed: "无法应用生成结果。请重新选择内容后再试。",
     configure: "请先在“我的 → AI 集成”中配置 AI 模型。",
   },
   accountInfo: {
@@ -687,6 +688,14 @@ export const zhCN = {
       focusReplace: {
         label: "替换文本",
         description: "在当前笔记中打开替换。",
+      },
+      saveAndSync: {
+        label: "保存并同步",
+        description: "立即保存当前笔记，并同步等待中的本地更改。",
+      },
+      toggleEditorMode: {
+        label: "切换编辑模式",
+        description: "在 Markdown 源码与富文本编辑模式之间切换。",
       },
     },
   },
@@ -1405,7 +1414,7 @@ export const zhCN = {
     closeNotice: "关闭更新通知",
     sidebarInstall: "下载桌面客户端",
     sidebarInstallTitle: "下载 EdgeEver 桌面客户端",
-    sidebarInstallAvailability: "Mac 可用 · Windows 敬请期待",
+    sidebarInstallAvailability: "Mac/iOS/安卓可用 · Windows 敬请期待",
     sidebarClipper: "安装浏览器剪藏插件",
     sidebarClipperTitle: "安装 EdgeEver 浏览器剪藏插件",
     iosPrompt: {
