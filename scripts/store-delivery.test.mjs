@@ -54,6 +54,33 @@ describe("store delivery command", () => {
     expect(workflow).toContain('gh release upload "$RELEASE_TAG" "$apk_path"');
   });
 
+  test("can prepare a matching Draft before formal publication", () => {
+    const workflow = readFileSync(
+      new URL("../.github/workflows/store-delivery.yml", import.meta.url),
+      "utf8",
+    );
+
+    expect(workflow).toContain('if [[ "$release_is_draft" = "true" ]]');
+    expect(workflow).toContain('previous_tag="${release_tags[0]:-}"');
+    expect(workflow).not.toContain('test "$(jq -r \'.draft\' <<<"$release")" = "false"');
+  });
+
+  test("uses a dedicated Draft audit that accepts only the Play app signer", () => {
+    const workflow = readFileSync(
+      new URL("../.github/workflows/android-play-signature-audit.yml", import.meta.url),
+      "utf8",
+    );
+
+    expect(workflow).toContain("github.repository == 'tianma-if/edgeever'");
+    expect(workflow).toContain("permissions:\n  # Draft Releases are only visible to a token with repository write access.\n  contents: write");
+    expect(workflow).toContain('gh release view "$RELEASE_TAG"');
+    expect(workflow).toContain('test "$(jq -r \'.isDraft\' <<<"$release")" = "true"');
+    expect(workflow).toContain("ref: ${{ steps.release.outputs.target_commitish }}");
+    expect(workflow).not.toContain("ref: ${{ inputs.release_tag }}");
+    expect(workflow).toContain("EDGE_EVER_ANDROID_ALLOWED_SIGNER_SHA256: ${{ secrets.ANDROID_PLAY_APP_SIGNER_SHA256 }}");
+    expect(workflow).not.toContain("22bf52a9501c89020f5acc966960152c826bfa64f31e578e858d088f8cd75d87");
+  });
+
   test("keeps the Play bundle and generated Release APK arm64-only", () => {
     const workflow = readFileSync(
       new URL("../.github/workflows/store-delivery.yml", import.meta.url),

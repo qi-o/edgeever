@@ -109,13 +109,13 @@ html[data-edgeever-environment="demo"] body::after {
     --brand-green-800-rgb: 17 83 60;
     --brand-green-900-rgb: 15 68 50;
     --brand-green-950-rgb: 7 37 28;
-    --workspace-canvas: #f2f2f2;
-    --workspace-sidebar: #f2f2f2;
-    --workspace-memo-list: #f7f7f7;
+    --workspace-canvas: #f8f9fa;
+    --workspace-sidebar: #f8f9fa;
+    --workspace-memo-list: #fafafa;
     --workspace-editor: #ffffff;
-    --workspace-divider: #dcdcdc;
-    --workspace-memo-divider: #dedede;
-    --workspace-selection: #e5e5e5;
+    --workspace-divider: #e9ebed;
+    --workspace-memo-divider: #edf0f2;
+    --workspace-selection: #edf0f2;
     --slate-50-rgb: 250 250 250;
     --slate-100-rgb: 245 245 245;
     --slate-200-rgb: 229 229 229;
@@ -472,7 +472,10 @@ html[data-edgeever-extension-theme] .edgeever-memo-divider {
   --editor-theme-bg: var(--workspace-editor);
 }
 
-:root.dark .ProseMirror {
+:root.dark .ProseMirror,
+:root.dark .ProseMirror h1,
+:root.dark .ProseMirror h2,
+:root.dark .ProseMirror h3 {
   color: hsl(var(--foreground));
 }
 
@@ -486,7 +489,7 @@ textarea {
   width: 100%;
   max-width: 100%;
   margin: 0;
-  color: #000;
+  color: #27272a;
   font-size: var(--editor-body-font-size);
   line-height: var(--editor-body-line-height);
   min-height: 100%;
@@ -555,21 +558,25 @@ textarea {
 .ProseMirror h1 {
   font-size: 2rem;
   font-weight: 760;
-  line-height: 1.15;
+  line-height: 1.25;
   margin: 0 0 1rem;
+  color: #18181b;
 }
 
 .ProseMirror h2 {
   font-size: 1.5rem;
   font-weight: 720;
-  line-height: 1.2;
+  line-height: 1.3;
   margin: 1.4rem 0 0.7rem;
+  color: #18181b;
 }
 
 .ProseMirror h3 {
   font-size: 1.2rem;
   font-weight: 700;
+  line-height: 1.35;
   margin: 1.2rem 0 0.6rem;
+  color: #27272a;
 }
 
 .ProseMirror p {

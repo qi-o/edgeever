@@ -24,6 +24,7 @@ const RUN_DISCOVERY_TIMEOUT_MS = 60_000;
 export const RELEASE_WORKFLOWS = {
   desktop: "desktop-build.yml",
   mobile: "mobile-build.yml",
+  androidPlaySignature: "android-play-signature-audit.yml",
   docker: "docker-image.yml",
   demo: "deploy-demo.yml",
 };
@@ -358,7 +359,7 @@ export const buildIssueBody = ({ changesEn, changesZh, commitCoverageAudit }) =>
   "## Acceptance criteria",
   "",
   "- Required type checks, Web build, and native release planning tests pass.",
-  "- The Draft Release contains audited macOS arm64 and x64 DMGs and an Android arm64 APK.",
+  "- The Draft Release contains audited macOS arm64 and x64 DMGs and a Play-signed Android arm64 APK.",
   "- Post-publication native asset audits pass.",
 ].join("\n");
 
@@ -1071,6 +1072,22 @@ const releaseMain = async (options) => {
     version: releaseVersion,
     desktopRebuild: desktopPlan.rebuild,
     mobileRebuild: mobilePlan.rebuild,
+  });
+
+  console.log(
+    `[release] requiring the Draft Android APK to use the Google Play app-signing certificate; ` +
+    `if this fails, run "bun run publish:stores -- --release ${tag} --platform android --android-track production" and resume the release.`,
+  );
+  const androidPlaySignatureRunId = await dispatchReleaseWorkflow({
+    repository: options.repository,
+    workflow: RELEASE_WORKFLOWS.androidPlaySignature,
+    tag,
+    headSha: releaseSha,
+  });
+  await waitForRun({
+    repository: options.repository,
+    runId: androidPlaySignatureRunId,
+    label: "Draft Android Play signature gate",
   });
 
   const publishedAt = Date.now();

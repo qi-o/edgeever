@@ -61,6 +61,7 @@ import {
   MAX_MEMO_LIST_WIDTH_PX,
   DEFAULT_MEMO_LIST_WIDTH_PX,
   isTextEntryTarget,
+  getSearchShortcutScope,
   getShortcutActionForEvent,
   getNotebookDropSortOrder,
   buildNotebookTree,
@@ -2649,7 +2650,7 @@ export const WorkspaceApp = ({
 
       if (action === "focusSearch") {
         event.preventDefault();
-        if (!selectedMemoId || !isDesktopViewport()) {
+        if (getSearchShortcutScope(selectedMemoId) === "memo-list") {
           clearMemoSelection();
           handleMobileSearch();
           return;

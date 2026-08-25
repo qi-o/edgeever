@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { readFileSync } from "node:fs";
 import {
   auditReleaseCommitCoverage,
   buildIssueBody,
@@ -18,6 +19,16 @@ import {
 describe("release automation", () => {
   test("prepares and audits the official Docker image with every formal release", () => {
     expect(RELEASE_WORKFLOWS.docker).toBe("docker-image.yml");
+  });
+
+  test("blocks publication until the Draft Android APK passes the Play signature gate", () => {
+    const releaseSource = readFileSync(new URL("./release.mjs", import.meta.url), "utf8");
+    const signatureGate = releaseSource.indexOf('label: "Draft Android Play signature gate"');
+    const publication = releaseSource.indexOf('"--draft=false"');
+
+    expect(RELEASE_WORKFLOWS.androidPlaySignature).toBe("android-play-signature-audit.yml");
+    expect(signatureGate).toBeGreaterThanOrEqual(0);
+    expect(publication).toBeGreaterThan(signatureGate);
   });
 
   test("runs the complete project regression suite before release", () => {
@@ -260,6 +271,7 @@ describe("release automation", () => {
     expect(body).toContain("## 中文说明");
     expect(body).toContain("- 并行检查。");
     expect(body).toContain("## Commit coverage audit");
+    expect(body).toContain("Play-signed Android arm64 APK");
     expect(body).toContain("- Change 1: `aaaaaaaa`");
     expect(body).toContain("- Excluded `bbbbbbbb`: test-only coverage");
   });

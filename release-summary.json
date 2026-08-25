@@ -1,17 +1,15 @@
 {
-  "version": "1.40.0",
+  "version": "1.41.0",
   "changes": {
     "en-US": [
-      "Access Web, desktop, Android, and iOS clients from a compact download menu in the sidebar.",
-      "Enjoy clearer workspace hierarchy, more consistent contrast, and refined colors across themes, editor views, exported notes, and print output.",
-      "Use self-hosted Docker instances over HTTP without client identity, sync, or rendering failures.",
-      "Desktop updates are now discovered more reliably, with clearer instance and version information in the app."
+      "Android updates now download in the background and are ready to install with fewer interruptions, with the published APK verified against the Google Play app-signing certificate.",
+      "The sidebar download menu now offers clearer platform and APK channel choices while keeping note search available in compact layouts.",
+      "Sharing styled text into the Android app now preserves the received content more reliably."
     ],
     "zh-CN": [
-      "现在可通过侧边栏中的紧凑下载菜单快速访问 Web、桌面、Android 和 iOS 客户端。",
-      "优化工作区层级、交互对比度与主题配色，并统一编辑视图、导出笔记和打印内容的视觉表现。",
-      "修复自托管 Docker 实例通过 HTTP 访问时可能出现的客户端标识、同步和渲染问题。",
-      "提升桌面端更新发现的可靠性，并在应用内提供更清晰的实例与版本信息。"
+      "Android 更新现在会在后台预下载并准备安装，减少操作打断；正式 APK 同时会核验 Google Play 应用签名证书。",
+      "侧边栏下载菜单现在提供更清晰的平台与 APK 渠道选项，并在紧凑布局中保留笔记搜索入口。",
+      "向 Android 应用分享带样式文本时，现在能更可靠地保留接收到的内容。"
     ]
   }
 }

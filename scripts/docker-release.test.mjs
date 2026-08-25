@@ -75,6 +75,7 @@ describe("Docker release contract", () => {
 
   test("gates official image publishing and release auditing", () => {
     const workflow = readProjectFile(".github/workflows/docker-image.yml");
+    const mirrorWorkflow = readProjectFile(".github/workflows/docker-tcr-mirror.yml");
     expect(workflow.match(/github\.repository == 'tianma-if\/edgeever'/g)?.length).toBeGreaterThanOrEqual(2);
     expect(workflow).toContain("release_tag");
     expect(workflow).toContain("contents: write\n      packages: write");
@@ -82,20 +83,25 @@ describe("Docker release contract", () => {
     expect(workflow).toContain('gh release view "${RELEASE_TAG}"');
     expect(workflow).not.toContain('releases/tags/${RELEASE_TAG}');
     expect(workflow).toContain("docker logout ghcr.io");
-    expect(workflow).toContain("TCR_IMAGE_NAME: ccr.ccs.tencentyun.com/edgeever/edgeever");
-    expect(workflow).toContain("secrets.TENCENT_TCR_USERNAME");
-    expect(workflow).toContain("secrets.TENCENT_TCR_PASSWORD");
-    expect(workflow).toContain("name: Mirror image to Tencent Cloud Container Registry");
-    expect(workflow).toContain('docker buildx imagetools create \\');
-    expect(workflow).toContain('--tag "${TCR_IMAGE_NAME}:${image_tag}"');
-    expect(workflow).toContain('"${GHCR_IMAGE_NAME}:${image_tag}"');
-    expect(workflow).toContain("for attempt in 1 2 3; do");
-    expect(workflow).toContain('Failed to mirror ${image_tag} after ${attempt} attempts');
-    expect(workflow).toContain('sleep "$((attempt * 15))"');
-    expect(workflow).not.toContain('echo "${TCR_IMAGE_NAME}:${RELEASE_TAG}"');
-    expect(workflow).toContain('docker logout ccr.ccs.tencentyun.com');
-    expect(workflow).toContain('test "${ghcr_digest}" = "${tcr_digest}"');
-    expect(workflow).toContain('for image in "${GHCR_IMAGE_NAME}" "${TCR_IMAGE_NAME}"');
     expect(workflow).toContain("docker buildx imagetools inspect");
+    expect(workflow).not.toContain("TCR_IMAGE_NAME");
+    expect(workflow).not.toContain("TENCENT_TCR_USERNAME");
+
+    expect(mirrorWorkflow).toContain("name: Mirror Docker image to Tencent TCR");
+    expect(mirrorWorkflow).toContain("workflow_run:");
+    expect(mirrorWorkflow).toContain("release:");
+    expect(mirrorWorkflow).toContain("github.event.workflow_run.event == 'push'");
+    expect(mirrorWorkflow).toContain("TCR_IMAGE_NAME: ccr.ccs.tencentyun.com/edgeever/edgeever");
+    expect(mirrorWorkflow).toContain("secrets.TENCENT_TCR_USERNAME");
+    expect(mirrorWorkflow).toContain("secrets.TENCENT_TCR_PASSWORD");
+    expect(mirrorWorkflow).toContain("sudo apt-get install --yes skopeo");
+    expect(mirrorWorkflow).toContain('skopeo copy \\');
+    expect(mirrorWorkflow).toContain("--all");
+    expect(mirrorWorkflow).toContain("--preserve-digests");
+    expect(mirrorWorkflow).toContain('"docker://${GHCR_IMAGE_NAME}:${SOURCE_TAG}"');
+    expect(mirrorWorkflow).toContain('"docker://${TCR_IMAGE_NAME}:${image_tag}"');
+    expect(mirrorWorkflow).toContain("for attempt in 1 2 3; do");
+    expect(mirrorWorkflow).toContain('Failed to mirror ${image_tag} after ${attempt} attempts');
+    expect(mirrorWorkflow).toContain('test "${source_digest}" = "${mirror_digest}"');
   });
 });
