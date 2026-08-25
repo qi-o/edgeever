@@ -21,6 +21,15 @@ describe("release automation", () => {
     expect(RELEASE_WORKFLOWS.docker).toBe("docker-image.yml");
   });
 
+  test("dispatches a unified post-release endpoint timing report", () => {
+    expect(RELEASE_WORKFLOWS.timings).toBe("release-timings.yml");
+    const releaseSource = readFileSync(new URL("./release.mjs", import.meta.url), "utf8");
+    expect(releaseSource).toContain("desktop_run_id=\${desktopRunId}");
+    expect(releaseSource).toContain("mobile_run_id=\${mobileRunId}");
+    expect(releaseSource).toContain("docker_run_id=\${dockerRunId}");
+    expect(releaseSource).toContain("endpoint timing report continues in background");
+  });
+
   test("blocks publication until the Draft Android APK passes the Play signature gate", () => {
     const releaseSource = readFileSync(new URL("./release.mjs", import.meta.url), "utf8");
     const signatureGate = releaseSource.indexOf('label: "Draft Android Play signature gate"');

@@ -49,8 +49,9 @@ bun run release -- \
   GHCR 多架构 Docker 镜像、正式发布、关闭 Issue，
   默认不安装桌面端应用；安装能力作为显式选项保留。
   输出 Actions 链接后，Demo 部署会独立继续执行。
-- 腾讯云 TCR 公共镜像由独立工作流在正式 Release 发布后异步同步和审计；其
-  耗时或失败不会阻塞 GitHub Release，也不会把已发布版本恢复为 Draft。
+- 独立工作流会把同一个已验证 Git 提交发送到 CNB；正式 Release 发布后，CNB
+  在腾讯云侧异步构建并审计 TCR 公共镜像。其耗时或失败不会阻塞 GitHub
+  Release，也不会把已发布版本恢复为 Draft。
 - 此命令不会自行授权或执行移动端商店交付。Draft 原生资产准备完成后，发布
   命令会强制核验 Android APK 是否使用 Google Play 应用签名证书；未通过时
   保持 Draft 并停止。此时先针对同一 Draft 执行
@@ -60,15 +61,17 @@ bun run release -- \
 
 ## 镜像仓库凭据
 
-官方仓库必须配置 `TENCENT_TCR_USERNAME` 和 `TENCENT_TCR_PASSWORD` 两个
-Actions Secret。对于 TCR 个人版，用户名是腾讯云账号 ID，密码是在 TCR 控制台
-初始化的固定登录密码。GHCR 是正式发布的阻塞门禁；TCR 在发布后异步写入相同
-标签并独立执行匿名访问、Digest 和架构检查。
+GitHub 官方仓库必须配置 `CNB_TCR_BUILD_PUSH_TOKEN` Actions Secret，该令牌仅
+拥有 CNB 源码镜像仓库的写权限。CNB 私有密钥仓库向可信的 `push` 和
+`tag_push` 流水线提供 `TCR_USERNAME` 与 `TCR_PASSWORD`。对于 TCR 个人版，
+用户名是腾讯云账号 ID，密码是在 TCR 控制台初始化的固定登录密码。GHCR 是正式
+发布的阻塞门禁；CNB 根据同一个 Git 提交异步构建 TCR，写入相同的公共标签，
+并独立核验匿名访问和双架构。两边独立构建，不要求 Registry Digest 相同。
 
 ## 失败与续跑
 
 - 本地验证、Draft 资产或 GHCR 镜像失败时，Release 保持未发布状态。
-- TCR 异步镜像失败时保留正式 Release，并在独立 Actions 工作流中修复、重跑。
+- CNB/TCR 异步构建失败时保留正式 Release，并独立修复、重跑。
 - 中断后重新执行相同命令，会续跑匹配的 Draft，不会重复创建 Issue、提交或
   Release。
 - 发布后的原生资产或 GHCR 镜像审计失败时，脚本会尝试将 Release 恢复为

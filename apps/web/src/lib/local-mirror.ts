@@ -717,10 +717,11 @@ export const restoreLocalMemo = async (scope: string, memoId: string) => {
 
 export const clearLocalScope = async (scope: string) => {
   const scopedResources = await localDb.resources.where("scope").equals(scope).toArray();
-  await localDb.transaction("rw", [localDb.notebooks, localDb.memos, localDb.templates, localDb.revisions, localDb.resources, localDb.syncQueue, localDb.syncMeta, localDb.idMappings], async () => {
+  await localDb.transaction("rw", [localDb.drafts, localDb.notebooks, localDb.memos, localDb.templates, localDb.revisions, localDb.resources, localDb.syncQueue, localDb.syncMeta, localDb.idMappings], async () => {
     const scopedMemos = await localDb.memos.where("scope").equals(scope).toArray();
     const scopedMemoIds = new Set(scopedMemos.map((memo) => memo.id));
     const queuedItems = await localDb.syncQueue.toArray();
+    await localDb.drafts.bulkDelete([...scopedMemoIds]);
     await localDb.notebooks.where("scope").equals(scope).delete();
     await localDb.memos.where("scope").equals(scope).delete();
     await localDb.templates.where("scope").equals(scope).delete();

@@ -1,15 +1,17 @@
 {
-  "version": "1.41.0",
+  "version": "1.42.0",
   "changes": {
     "en-US": [
-      "Android updates now download in the background and are ready to install with fewer interruptions, with the published APK verified against the Google Play app-signing certificate.",
-      "The sidebar download menu now offers clearer platform and APK channel choices while keeping note search available in compact layouts.",
-      "Sharing styled text into the Android app now preserves the received content more reliably."
+      "Use the new CodeMirror-powered Markdown source editor with theme-aware syntax styling, lazy loading, and Tab/Shift-Tab indentation.",
+      "Improve content readability across Web, Android, and iOS with refined spacing, table layout, dark-mode selection contrast, and inline-code styling.",
+      "Keep the public Demo workspace consistent after scheduled resets instead of retaining stale local data.",
+      "Publish Tencent TCR multi-architecture images through Tencent-side builds for faster and more reliable availability in China."
     ],
     "zh-CN": [
-      "Android 更新现在会在后台预下载并准备安装，减少操作打断；正式 APK 同时会核验 Google Play 应用签名证书。",
-      "侧边栏下载菜单现在提供更清晰的平台与 APK 渠道选项，并在紧凑布局中保留笔记搜索入口。",
-      "向 Android 应用分享带样式文本时，现在能更可靠地保留接收到的内容。"
+      "Markdown 源码编辑器升级为 CodeMirror，支持跟随主题的语法样式、按需加载以及 Tab/Shift-Tab 缩进。",
+      "优化 Web、Android 和 iOS 的内容可读性，包括间距、表格布局、深色模式选区对比度和行内代码样式。",
+      "修复公开 Demo 定时重置后仍可能保留旧本地数据的问题，确保工作区状态一致。",
+      "腾讯云 TCR 多架构镜像改为在腾讯云侧构建，提升中国大陆区域的发布速度与稳定性。"
     ]
   }
 }

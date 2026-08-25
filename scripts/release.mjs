@@ -27,6 +27,7 @@ export const RELEASE_WORKFLOWS = {
   androidPlaySignature: "android-play-signature-audit.yml",
   docker: "docker-image.yml",
   demo: "deploy-demo.yml",
+  timings: "release-timings.yml",
 };
 
 export const RELEASE_VALIDATIONS = [
@@ -1178,6 +1179,38 @@ const releaseMain = async (options) => {
     "--body",
     `Released in [${tag}](${releaseUrl}).\n\nRequired local validations, Draft asset and image preparation, and post-publication audits passed.`,
   ]);
+  const timingDispatch = run("gh", [
+    "workflow",
+    "run",
+    RELEASE_WORKFLOWS.timings,
+    "--repo",
+    options.repository,
+    "--ref",
+    "main",
+    "-f",
+    `release_tag=${tag}`,
+    "-f",
+    `release_sha=${releaseSha}`,
+    "-f",
+    `issue_number=${issueNumber}`,
+    "-f",
+    `desktop_run_id=${desktopRunId}`,
+    "-f",
+    `desktop_mode=${desktopPlan.rebuild ? "rebuild" : "reuse"}`,
+    "-f",
+    `mobile_run_id=${mobileRunId}`,
+    "-f",
+    `mobile_mode=${mobilePlan.rebuild ? "rebuild" : "reuse"}`,
+    "-f",
+    `docker_run_id=${dockerRunId}`,
+  ], { allowFailure: true });
+  if (timingDispatch.status === 0) {
+    console.log(
+      `[release] endpoint timing report continues in background: https://github.com/${options.repository}/actions/workflows/${RELEASE_WORKFLOWS.timings}`,
+    );
+  } else {
+    console.warn("[release] failed to dispatch the non-blocking endpoint timing report");
+  }
   run("gh", [
     "issue",
     "close",
