@@ -636,7 +636,7 @@ export const enUS = {
     desktopUpdateDownloading: "Downloading update…",
     desktopUpdateReady: "Update downloaded",
     desktopUpdateDownload: "Download update",
-    desktopUpdateRestart: "Restart to update",
+    desktopUpdateRestart: "Restart to Update",
     desktopUpdateInstalling: "Restarting to install update…",
     desktopUpdateFailed: "Update failed. Please try again later.",
   },
@@ -1206,6 +1206,7 @@ export const enUS = {
   },
   sharing: {
     action: "Share note",
+    afterSync: "Share note after sync",
     active: "Shared",
     manage: "Manage sharing",
     title: "Share note",

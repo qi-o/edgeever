@@ -1,4 +1,5 @@
 import { createExcerpt, docToMarkdown, docToText, markdownToDoc, mergeMemoDocs, resolveMemoContentDoc, resolveMergedMemoTitle, type MemoDetail, type MemoRevision, type MemoSummary, type MemoTemplate, type Notebook, type ResourceListItem, type TagSummary, type TiptapDoc } from "@edgeever/shared";
+import { liveQuery } from "dexie";
 import type { MemoFilterMode, MemoSortMode } from "@/lib/app-helpers";
 import { api, type SyncChangesResponse } from "@/lib/api";
 import { localDb, selectNewestLocalDraft, type LocalDraft, type LocalMemo, type LocalNotebook, type LocalResource, type LocalRevision } from "@/lib/local-db";
@@ -317,6 +318,23 @@ export const remapLocalDraftMemoId = async (temporaryId: string, remoteId: strin
     }
     await localDb.drafts.delete(temporaryId);
   });
+};
+
+export const listLocalMemoIdMappings = async (scope: string) => new Map(
+  (await localDb.idMappings.where("scope").equals(scope).toArray())
+    .map(({ temporaryId, remoteId }) => [temporaryId, remoteId] as const),
+);
+
+export const observeLocalMemoIdMappings = (
+  scope: string,
+  onChange: (mappings: ReadonlyMap<string, string>) => void,
+) => {
+  const subscription = liveQuery(() => listLocalMemoIdMappings(scope)).subscribe({
+    next: onChange,
+    error: () => onChange(new Map()),
+  });
+
+  return () => subscription.unsubscribe();
 };
 
 export const replaceLocalMemoId = async (scope: string, temporaryId: string, memo: MemoDetail) => {

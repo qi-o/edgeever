@@ -162,7 +162,13 @@ import { NOTE_HTML_FULL_STYLES } from "@/lib/note-html-export-assets";
 import { downloadNoteHtmlFile, getHtmlImageEmbedNoticeKind } from "@/lib/note-html-export";
 import { openNotePrintPreview, serializeNoteDocumentForPrint } from "@/lib/note-print";
 import type { NoteImageFormat } from "@/lib/note-image-export";
-import { applyPlainTextTab, getAiSlashCommandStart, saveAndSyncEditor, shouldOpenAiFromSpace } from "@/lib/editor-shortcuts";
+import {
+  applyPlainTextTab,
+  getAiSlashCommandStart,
+  preserveEmptyListIndentOnBackspace,
+  saveAndSyncEditor,
+  shouldOpenAiFromSpace,
+} from "@/lib/editor-shortcuts";
 import {
   AI_SPACE_SHORTCUT_CHANGED_EVENT,
   readAiSpaceShortcutPreference,
@@ -1308,6 +1314,11 @@ const RichEditorPane = ({
       handleKeyDown: (view, event) => {
         const { selection } = view.state;
         const currentNode = selection.$from.parent;
+        if (event.key === "Backspace" && preserveEmptyListIndentOnBackspace(view.state, view.dispatch)) {
+          event.preventDefault();
+          return true;
+        }
+
         if (event.key === "Tab" && applyPlainTextTab(view.state, view.dispatch, event.shiftKey)) {
           event.preventDefault();
           return true;
@@ -2691,6 +2702,13 @@ const RichEditorPane = ({
       const syncedMemo = memoId ? result?.syncedMemos?.get(memoId) : null;
       advanceMemoSyncBase(syncedMemo);
 
+      // A newly created note keeps a local ID until its create request has
+      // been acknowledged and remapped. A different queue item completing
+      // must not make that note claim it is already synced.
+      if (!memoId || isLocalMemoId(memoId)) {
+        return;
+      }
+
       if (memoId && (result?.conflicted ?? 0) > 0) {
         void localDb.syncQueue.get(getMemoUpdateQueueId(memoId)).then((item) => {
           if (!item || item.status !== "conflict" || memoRef.current?.id !== memoId) {
@@ -2706,12 +2724,19 @@ const RichEditorPane = ({
         return;
       }
 
-      setSaveState((current) => {
-        if (current !== "queued") {
-          return current;
+      // Sync runs are workspace-wide. Confirm that this memo has no successor
+      // request left in the outbox before changing its per-note status.
+      void localDb.syncQueue.where("memoId").equals(memoId).first().then((item) => {
+        if (item || memoRef.current?.id !== memoId || hasUnsavedChangesRef.current) {
+          return;
         }
-        setSaveConflictInfo(null);
-        return "saved";
+        setSaveState((current) => {
+          if (current !== "queued") {
+            return current;
+          }
+          setSaveConflictInfo(null);
+          return "saved";
+        });
       });
     };
 
@@ -4335,7 +4360,7 @@ const RichEditorPane = ({
                     onClick={() => setShareOpen(true)}
                   >
                     <Link2 className={cn("h-4 w-4", isMemoShared ? "text-emerald-600" : "text-slate-500")} />
-                    {t(isMemoShared ? "sharing.manage" : "sharing.action")}
+                    {t(isLocalMemoId(memo.id) ? "sharing.afterSync" : isMemoShared ? "sharing.manage" : "sharing.action")}
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuItem

@@ -54,6 +54,7 @@ import {
 } from "@/lib/app-helpers";
 import type { EdgeEverRepository } from "@/lib/repository";
 import { statusSettleMotion } from "@/lib/motion";
+import { DesktopUpdateNotice } from "./DesktopUpdateNotice";
 
 const NOTEBOOK_DRAG_SCROLL_EDGE_PX = 56;
 const NOTEBOOK_DRAG_SCROLL_MAX_STEP_PX = 18;
@@ -817,17 +818,20 @@ export const NotebookPane = ({
               </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
-          <button
-            onClick={onOpenSettings}
-            className="flex h-8 w-full items-center gap-3 rounded-md px-3 text-left text-sm font-medium leading-none text-slate-700 transition-colors duration-200 hover:bg-slate-50 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400/70"
-            type="button"
-            aria-label={t("notebookPane.profile")}
-          >
-            <span className="flex h-4 w-4 shrink-0 items-center justify-center">
-              <CircleUserRound className="h-4 w-4" />
-            </span>
-            <span className="min-w-0 flex-1 truncate">{t("notebookPane.profile")}</span>
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={onOpenSettings}
+              className="flex h-8 min-w-0 flex-1 items-center gap-3 rounded-md px-3 text-left text-sm font-medium leading-none text-slate-700 transition-colors duration-200 hover:bg-slate-50 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400/70"
+              type="button"
+              aria-label={t("notebookPane.profile")}
+            >
+              <span className="flex h-4 w-4 shrink-0 items-center justify-center">
+                <CircleUserRound className="h-4 w-4" />
+              </span>
+              <span className="min-w-0 flex-1 truncate">{t("notebookPane.profile")}</span>
+            </button>
+            <DesktopUpdateNotice />
+          </div>
         </div>
       </footer>
     </div>

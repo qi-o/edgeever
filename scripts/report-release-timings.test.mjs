@@ -57,6 +57,12 @@ describe("release timing report", () => {
           step("Build and publish image", start, 240),
         ]),
       ]),
+      store: payload("Store", start, 660, [
+        job("Deliver Google Play", start, 660, [
+          step("Build and verify signed Play bundle", start, 180),
+          step("Upload bundle to Google Play", start, 240),
+        ]),
+      ]),
       cloudflare: payload("Cloudflare", start, 120, [
         job("Build and deploy Demo Worker", start, 120, [
           step("Deploy Demo Worker", start, 60),
@@ -78,6 +84,7 @@ describe("release timing report", () => {
       "macOS arm64",
       "macOS x64",
       "Android arm64",
+      "Google Play signed APK",
     ]);
     const markdown = renderReleaseTimingMarkdown(report);
     expect(markdown).toContain(
@@ -88,6 +95,9 @@ describe("release timing report", () => {
     );
     expect(markdown).toContain(
       "| macOS x64 | rebuild | success | 10m 00s | package + notarize 5m 00s |",
+    );
+    expect(markdown).toContain(
+      "| Google Play signed APK | build + deliver | success | 11m 00s | AAB build 3m 00s; Play upload 4m 00s |",
     );
   });
 

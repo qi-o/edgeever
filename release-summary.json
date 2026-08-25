@@ -1,17 +1,17 @@
 {
-  "version": "1.42.0",
+  "version": "1.42.1",
   "changes": {
     "en-US": [
-      "Use the new CodeMirror-powered Markdown source editor with theme-aware syntax styling, lazy loading, and Tab/Shift-Tab indentation.",
-      "Improve content readability across Web, Android, and iOS with refined spacing, table layout, dark-mode selection contrast, and inline-code styling.",
-      "Keep the public Demo workspace consistent after scheduled resets instead of retaining stale local data.",
-      "Publish Tencent TCR multi-architecture images through Tencent-side builds for faster and more reliable availability in China."
+      "Keep newly created notes selected after sync, and make links between publicly shared notes open correctly.",
+      "Make downloaded desktop updates clearly actionable so they can be installed without hunting for the update control.",
+      "Prevent desktop edits from being reported as sync conflicts after a newer local change supersedes an in-flight sync.",
+      "Improve nested-list editing so Tab, Shift+Tab, Backspace, and indentation controls behave consistently."
     ],
     "zh-CN": [
-      "Markdown 源码编辑器升级为 CodeMirror，支持跟随主题的语法样式、按需加载以及 Tab/Shift-Tab 缩进。",
-      "优化 Web、Android 和 iOS 的内容可读性，包括间距、表格布局、深色模式选区对比度和行内代码样式。",
-      "修复公开 Demo 定时重置后仍可能保留旧本地数据的问题，确保工作区状态一致。",
-      "腾讯云 TCR 多架构镜像改为在腾讯云侧构建，提升中国大陆区域的发布速度与稳定性。"
+      "修复新建笔记同步后的选中状态，并让公开分享笔记之间的引用链接正确打开。",
+      "让已下载的桌面更新显示明确的安装入口，无需再寻找更新控件。",
+      "修复桌面端较新的本地编辑覆盖同步中变更时被误报为同步冲突的问题。",
+      "改进多级列表编辑，使 Tab、Shift+Tab、退格键和缩进控件的行为保持一致。"
     ]
   }
 }

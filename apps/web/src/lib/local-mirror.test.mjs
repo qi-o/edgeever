@@ -32,8 +32,11 @@ const {
   putLocalResource,
   createLocalResource,
   listLocalResources,
+  listLocalMemoIdMappings,
+  observeLocalMemoIdMappings,
   replaceLocalResources,
   remapLocalDraftMemoId,
+  replaceLocalMemoId,
   hasLocalSyncCursorRewound,
   syncLocalMirror,
 } = await import("./local-mirror.ts");
@@ -61,6 +64,43 @@ afterEach(async () => {
 });
 
 describe("local mirror", () => {
+  test("records a durable mapping when a new memo receives its remote id", async () => {
+    const scope = createLocalDataScope("https://notes.example.org", "user-1");
+    const localMemo = await createLocalMemo(scope, { notebookId: "inbox", title: "New note" });
+    const remoteMemo = {
+      ...localMemo,
+      id: "memo-remote",
+      revision: 1,
+      contentHash: "remote-hash",
+    };
+
+    await replaceLocalMemoId(scope, localMemo.id, remoteMemo);
+
+    expect(await listLocalMemoIdMappings(scope)).toEqual(new Map([[localMemo.id, remoteMemo.id]]));
+  });
+
+  test("observes a new memo id mapping so another live workspace can recover", async () => {
+    const scope = createLocalDataScope("https://notes.example.org", "user-1");
+    const localMemo = await createLocalMemo(scope, { notebookId: "inbox", title: "New note" });
+    const remoteMemo = {
+      ...localMemo,
+      id: "memo-remote",
+      revision: 1,
+      contentHash: "remote-hash",
+    };
+    const observedMapping = new Promise((resolve) => {
+      const unsubscribe = observeLocalMemoIdMappings(scope, (mappings) => {
+        if (mappings.get(localMemo.id) !== remoteMemo.id) return;
+        unsubscribe();
+        resolve(mappings);
+      });
+    });
+
+    await replaceLocalMemoId(scope, localMemo.id, remoteMemo);
+
+    expect(await observedMapping).toEqual(new Map([[localMemo.id, remoteMemo.id]]));
+  });
+
   test("clears cached data, drafts, and pending changes for a reset scope", async () => {
     const scope = createLocalDataScope("https://demo.edgeever.org", "user-1");
     const otherScope = createLocalDataScope("https://notes.example.org", "user-2");

@@ -139,6 +139,7 @@ export function createReleaseTimingReport({
   mobile,
   mobileMode,
   docker,
+  store = null,
   cloudflare,
   tcrSource,
   tcrReadyAt,
@@ -148,6 +149,12 @@ export function createReleaseTimingReport({
   const cloudflareStep = findStep(cloudflareJob, "Deploy Demo Worker");
   const dockerJob = findJob(docker, "Publish official multi-platform image");
   const dockerStep = findStep(dockerJob, "Build and publish image");
+  const storeJob = store ? findJob(store, "Deliver Google Play") : null;
+  const storeBuildStep = findStep(
+    storeJob,
+    "Build and verify signed Play bundle",
+  );
+  const storeUploadStep = findStep(storeJob, "Upload bundle to Google Play");
   const tcrSourceJob = findJob(
     tcrSource,
     "Trigger asynchronous Tencent-side image build",
@@ -182,6 +189,18 @@ export function createReleaseTimingReport({
     },
     ...nativeRows(desktop, "desktop", desktopMode),
     ...nativeRows(mobile, "android", mobileMode),
+    ...(storeJob
+      ? [
+          componentRow({
+            target: "Google Play signed APK",
+            mode: "build + deliver",
+            candidate: storeJob,
+            duration: jobDurationMs(storeJob),
+            detail: `AAB build ${formatDuration(stepDurationMs(storeBuildStep))}; Play upload ${formatDuration(stepDurationMs(storeUploadStep))}`,
+            url: storeJob.html_url ?? store.run.html_url,
+          }),
+        ]
+      : []),
   ];
 
   const publishedAt = timestamp(release.publishedAt);
@@ -282,6 +301,7 @@ if (import.meta.main) {
     mobile: readJson(options.mobile),
     mobileMode: options["mobile-mode"],
     docker: readJson(options.docker),
+    store: options.store ? readJson(options.store) : null,
     cloudflare: readJson(options.cloudflare),
     tcrSource: readJson(options["tcr-source"]),
     tcrReadyAt: options["tcr-ready-at"] || null,
