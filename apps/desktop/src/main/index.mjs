@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 import { release as operatingSystemRelease } from "node:os";
 import { SidecarRpcClient } from "./rpc.mjs";
 import { resourceRequestHeaders } from "./resource-request.mjs";
-import { isSafeResourceId, resourceIdFromRequest } from "./resource-url.mjs";
+import { cachedResourceResponse, isSafeResourceId, resourceIdFromRequest } from "./resource-url.mjs";
 import { isSupportedAssociatedFile } from "./file-association.mjs";
 import { accountDataDirectory, accountScopeKey } from "./account-scope.mjs";
 import { rotateDiagnosticLog } from "./diagnostic-log.mjs";
@@ -454,7 +454,7 @@ const registerResourceProtocol = () => {
       const bytes = await readFile(bytesPath);
       let metadata = {};
       try { metadata = JSON.parse(await readFile(metadataPath, "utf8")); } catch {}
-      return new Response(bytes, { headers: { "Content-Type": metadata.contentType || "application/octet-stream", "Cache-Control": "no-store" } });
+      return cachedResourceResponse(bytes, metadata.contentType, request.headers.get("range"));
     } catch {
       // Fall through to the instance while online, then persist the response.
     }
@@ -464,16 +464,30 @@ const registerResourceProtocol = () => {
     try {
       const cookies = await session.defaultSession.cookies.get({ url: sourceUrl });
       const headers = resourceRequestHeaders({ cookies, sessionToken: desktopSessionToken });
+      const rangeHeader = request.headers.get("range");
+      if (rangeHeader) headers.set("range", rangeHeader);
       const response = await net.fetch(sourceUrl, { headers });
       if (!response.ok) return new Response("Resource request failed", { status: response.status });
       const body = Buffer.from(await response.arrayBuffer());
+      if (response.status === 206) {
+        const responseHeaders = new Headers({
+          "Accept-Ranges": response.headers.get("accept-ranges") || "bytes",
+          "Cache-Control": "no-store",
+          "Content-Type": response.headers.get("content-type") || "application/octet-stream",
+        });
+        for (const name of ["content-length", "content-range", "etag", "last-modified"]) {
+          const value = response.headers.get(name);
+          if (value) responseHeaders.set(name, value);
+        }
+        return new Response(body, { status: 206, headers: responseHeaders });
+      }
       await mkdir(directory, { recursive: true });
       await restrictDirectory(directory);
       await writeFile(bytesPath, body, { mode: 0o600 });
       await writeFile(metadataPath, JSON.stringify({ contentType: response.headers.get("content-type") || "application/octet-stream" }), { mode: 0o600 });
       await restrictFile(bytesPath);
       await restrictFile(metadataPath);
-      return new Response(body, { headers: { "Content-Type": response.headers.get("content-type") || "application/octet-stream", "Cache-Control": "no-store" } });
+      return cachedResourceResponse(body, response.headers.get("content-type"), null);
     } catch (error) {
       void writeDiagnostic("resource.cache-failed", { resourceId, message: error.message });
       return new Response("Resource unavailable", { status: 504 });

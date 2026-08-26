@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
+import { PdfAttachment } from "@/components/editor/PdfAttachment";
 import Image from "@tiptap/extension-image";
 import { TaskItem, TaskList } from "@tiptap/extension-list";
 import { mergeAttributes } from "@tiptap/core";
@@ -195,6 +196,7 @@ export const MobileStandaloneTiptapEditor = ({
   const editor = useEditor({
     extensions: [
       StarterKit,
+      PdfAttachment,
       TaskList,
       TaskItem.configure({ nested: true }),
       MergeDivider,

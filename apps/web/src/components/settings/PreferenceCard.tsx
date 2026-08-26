@@ -1,4 +1,4 @@
-import { AlignHorizontalJustifyCenter, ChartNoAxesCombined, FileCode2, Image, Keyboard, Languages, MousePointerClick, Palette, RefreshCw, Sparkles } from "lucide-react";
+import { AlignHorizontalJustifyCenter, ChartNoAxesCombined, FileCode2, FileText, Image, Keyboard, Languages, MousePointerClick, Palette, RefreshCw, Sparkles } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { writeSyncIntervalPreference, type EditorContentAlignment, type ShortcutSettings, type SyncIntervalPreference } from "@/lib/app-helpers";
@@ -18,6 +18,13 @@ import {
   readAiSpaceShortcutPreference,
   writeAiSpaceShortcutPreference,
 } from "@/lib/ai-space-shortcut-preference";
+import {
+  PDF_PREVIEW_CHANGED_EVENT,
+  PDF_PREVIEW_STORAGE_KEY,
+  readPdfPreviewPreference,
+  writePdfPreviewPreference,
+  type PdfPreviewPreference,
+} from "@/lib/pdf-preview-preference";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -79,6 +86,7 @@ export const PreferenceCard = ({
   const [linkOpenMode, setLinkOpenMode] = useState<EditorLinkOpenMode>(() => getStoredEditorLinkOpenMode());
   const [aiSelectionMenuEnabled, setAiSelectionMenuEnabled] = useState(readAiSelectionMenuPreference);
   const [aiSpaceShortcutEnabled, setAiSpaceShortcutEnabled] = useState(readAiSpaceShortcutPreference);
+  const [pdfPreviewPreference, setPdfPreviewPreference] = useState<PdfPreviewPreference>(readPdfPreviewPreference);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(max-width: 640px)");
@@ -86,6 +94,23 @@ export const PreferenceCard = ({
     const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
     mediaQuery.addEventListener("change", handler);
     return () => mediaQuery.removeEventListener("change", handler);
+  }, []);
+
+  useEffect(() => {
+    const syncPreference = () => setPdfPreviewPreference(readPdfPreviewPreference());
+    const onPreferenceChanged = (event: Event) => {
+      const detail = (event as CustomEvent<PdfPreviewPreference>).detail;
+      setPdfPreviewPreference(detail === "collapsed" ? "collapsed" : "expanded");
+    };
+    const onStorage = (event: StorageEvent) => {
+      if (!event.key || event.key === PDF_PREVIEW_STORAGE_KEY) syncPreference();
+    };
+    window.addEventListener(PDF_PREVIEW_CHANGED_EVENT, onPreferenceChanged);
+    window.addEventListener("storage", onStorage);
+    return () => {
+      window.removeEventListener(PDF_PREVIEW_CHANGED_EVENT, onPreferenceChanged);
+      window.removeEventListener("storage", onStorage);
+    };
   }, []);
 
   useEffect(() => {
@@ -404,6 +429,27 @@ export const PreferenceCard = ({
               checked={imageCompressionEnabled}
               onCheckedChange={onImageCompressionChange}
               aria-label={t("settings.imageCompressionAria")}
+            />
+          </div>
+        </div>
+
+        <div className="flex min-h-16 flex-col items-start gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+          <div className="flex min-w-0 items-start gap-3">
+            <FileText className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700" />
+            <div className="min-w-0">
+              <div className="text-sm font-semibold text-slate-900">{t("settings.pdfPreviewDefaultTitle")}</div>
+              <div className="mt-0.5 text-xs leading-4 text-slate-500">{t("settings.pdfPreviewDefaultDescription")}</div>
+            </div>
+          </div>
+          <div className="flex w-full shrink-0 justify-start sm:w-44 sm:justify-end">
+            <Switch
+              checked={pdfPreviewPreference === "expanded"}
+              onCheckedChange={(enabled) => {
+                const nextPreference = enabled ? "expanded" : "collapsed";
+                writePdfPreviewPreference(nextPreference);
+                setPdfPreviewPreference(nextPreference);
+              }}
+              aria-label={t("settings.pdfPreviewDefaultAria")}
             />
           </div>
         </div>

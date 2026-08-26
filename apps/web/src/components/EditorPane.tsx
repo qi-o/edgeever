@@ -83,6 +83,12 @@ import { EditorOutline } from "./EditorOutline";
 import { EditorTagPicker } from "./EditorTagPicker";
 import { useAiBubbleMenu } from "./editor/useAiBubbleMenu";
 import {
+  clampResourceInsertionTarget,
+  clearNodeSelectionAtDocumentEnd,
+  getResourceInsertionTarget,
+  shouldSelectInsertedResources,
+} from "@/lib/resource-insertion-target";
+import {
   createSlashCommandExtension,
   type SlashCommandActions,
   type SlashCommandLabels,
@@ -117,6 +123,7 @@ import {
   MEMO_CONTENT_STYLE,
   markdownToDoc,
   MergeDivider,
+  isPdfAttachment,
   resolveMemoContentDoc,
   type Notebook,
   type MemoDetail,
@@ -189,7 +196,7 @@ import {
   isAttachmentLinkHref,
 } from "@/lib/editor-external-link";
 import { insertAiDraftAtTextCursor } from "@/lib/ai-draft-insertion";
-import { processFilesSequentially } from "@/lib/file-batch";
+import { createFileBatchQueue, processFilesSequentially } from "@/lib/file-batch";
 import { MEMO_ID_REMAPPED_EVENT, MEMO_SYNC_ACKNOWLEDGED_EVENT } from "@/lib/sync-events";
 import { useStandaloneMobileEditor } from "@/hooks/useStandaloneMobileEditor";
 import { statusSettleMotion } from "@/lib/motion";
@@ -209,6 +216,7 @@ import {
   type ImagePreviewRequestDetail,
 } from "./editor/ResizableImage";
 import { ImageViewer } from "./editor/ImageViewer";
+import { PdfAttachment } from "./editor/PdfAttachment";
 import {
   createNoteSearchHighlightPlugin,
   formatNoteSearchMatchLabel,
@@ -766,6 +774,7 @@ const RichEditorPane = ({
   const { customEditorTheme, editorTheme } = useEditorTheme();
   const { markdownTheme } = useMarkdownTheme();
   const queryClient = useQueryClient();
+  const resourceInsertionLimit = useMemo(createFileBatchQueue, []);
   const isSelectionMode = Boolean(selectionActionBar);
   const [title, setTitle] = useState("");
   const [tagsText, setTagsText] = useState("");
@@ -938,6 +947,7 @@ const RichEditorPane = ({
   const memoRef = useRef<MemoDetail | null>(memo);
   const editSessionRef = useRef<MemoEditSession | null>(null);
   const editorRef = useRef<Editor | null>(null);
+  const editorCanvasInteractionVersionRef = useRef(0);
   const openAiAssistantRef = useRef<() => void>(() => undefined);
   const aiSpaceShortcutEnabledRef = useRef(readAiSpaceShortcutPreference());
   const editorScrollContainerRef = useRef<HTMLDivElement | null>(null);
@@ -1200,8 +1210,21 @@ const RichEditorPane = ({
     }
 
     const targetMemoId = currentMemo.id;
+    const interactionVersionAtRequest = editorCanvasInteractionVersionRef.current;
 
-    void (async () => {
+    void resourceInsertionLimit(async () => {
+      const insertionEditor = editorRef.current;
+      if (
+        memoRef.current?.id !== targetMemoId ||
+        !isEditorReady(insertionEditor) ||
+        !insertionEditor.isEditable
+      ) {
+        return;
+      }
+
+      // Read the selection only after earlier resource insertions complete.
+      // Rapid consecutive pastes otherwise race with the same stale cursor.
+      const insertionTarget = getResourceInsertionTarget(insertionEditor.state.selection);
       setImageUploadState("uploading");
 
       const results = await processFilesSequentially(files, async (file) => {
@@ -1239,32 +1262,66 @@ const RichEditorPane = ({
         return;
       }
 
-      const content = successfulResults.map(({ file, value: resource }) =>
-        resource.kind === "image"
-          ? {
-              type: "image",
+      const content = successfulResults.map(({ file, value: resource }) => {
+        const filename = resource.filename || file.name;
+        if (resource.kind === "image") {
+          return {
+            type: "image",
+            attrs: {
+              src: resource.url,
+              alt: file.name,
+              title: file.name,
+              width: DEFAULT_IMAGE_WIDTH_PERCENT,
+            },
+          };
+        }
+        if (isPdfAttachment(file.type, filename)) {
+          return {
+            type: "paragraph",
+            content: [{
+              type: "edgeeverPdfAttachment",
               attrs: {
-                src: resource.url,
-                alt: file.name,
-                title: file.name,
-                width: DEFAULT_IMAGE_WIDTH_PERCENT,
+                url: resource.url,
+                label: t("editor.attachmentLabel", { filename }),
               },
-            }
-          : {
-              type: "paragraph",
-              content: [{
-                type: "text",
-                text: t("editor.attachmentLabel", { filename: resource.filename || file.name }),
-                marks: [{
-                  type: "link",
-                  attrs: { href: resource.url, target: "_blank", class: "edgeever-attachment-link" },
-                }],
-              }],
-            }
-      );
+            }],
+          };
+        }
+        return {
+          type: "paragraph",
+          content: [{
+            type: "text",
+            text: t("editor.attachmentLabel", { filename }),
+            marks: [{
+              type: "link",
+              attrs: { href: resource.url, target: "_blank", class: "edgeever-attachment-link" },
+            }],
+          }],
+        };
+      });
 
       if (content.length > 0) {
-        activeEditor.chain().focus().insertContent(content).run();
+        const safeInsertionTarget = clampResourceInsertionTarget(
+          insertionTarget,
+          activeEditor.state.doc.content.size,
+        );
+        const updateSelection = shouldSelectInsertedResources(
+          interactionVersionAtRequest,
+          editorCanvasInteractionVersionRef.current,
+        );
+        const insertion = activeEditor.chain();
+        if (updateSelection) {
+          insertion.focus();
+        }
+        insertion
+          .insertContentAt(safeInsertionTarget, content, { updateSelection })
+          .run();
+        if (!updateSelection) {
+          // ProseMirror can still map a cursor at the document boundary to a
+          // NodeSelection for the newly inserted block image. Honor the newer
+          // canvas click deterministically instead of trusting that mapping.
+          clearNodeSelectionAtDocumentEnd(activeEditor);
+        }
       }
 
       if (results.some((result) => result.status === "rejected")) {
@@ -1273,8 +1330,8 @@ const RichEditorPane = ({
       } else {
         setImageUploadState("idle");
       }
-    })();
-  }, [queryClient, repository, t]);
+    });
+  }, [queryClient, repository, resourceInsertionLimit, t]);
 
   const editor = useEditor({
     extensions: [
@@ -1286,6 +1343,7 @@ const RichEditorPane = ({
       TaskItem.configure({ nested: true }),
       EdgeEverCodeBlock.configure({ lowlight: codeBlockLowlight, defaultLanguage: "plaintext" }),
       MergeDivider,
+      PdfAttachment,
       ...createEdgeEverMathematics(),
       ThemeBlock,
       ResizableImage.configure({
@@ -1768,8 +1826,23 @@ const RichEditorPane = ({
 
     if (event.button === 0 && !event.ctrlKey && !event.metaKey) {
       showEditorLinkOpenHint(event.target);
+
+      const target = event.target;
+      const proseMirror = event.currentTarget.querySelector<HTMLElement>(".ProseMirror");
+      const clickedEmptyCanvas = target === proseMirror || (
+        target instanceof Node &&
+        proseMirror !== null &&
+        !proseMirror.contains(target)
+      );
+      if (clickedEmptyCanvas) {
+        editorCanvasInteractionVersionRef.current += 1;
+        const clearedNodeSelection = Boolean(editor && clearNodeSelectionAtDocumentEnd(editor));
+        if (editor && clearedNodeSelection) {
+          window.requestAnimationFrame(() => editor.commands.focus());
+        }
+      }
     }
-  }, [onOpenMemo, showEditorLinkOpenHint]);
+  }, [editor, onOpenMemo, showEditorLinkOpenHint]);
 
   const handleEditorFocusCapture = useCallback((event: ReactFocusEvent<HTMLDivElement>) => {
     if (showAttachmentMenu(event.target)) return;
@@ -4715,6 +4788,11 @@ const RichEditorPane = ({
             />
           )}
         <div
+          onClickCapture={
+            !useMobilePlainTextEditor && !useMarkdownSourceEditor
+              ? handleEditorClickCapture
+              : undefined
+          }
           className={cn(
             "flex gap-8 transition-all duration-200",
             useMarkdownSourceEditor
@@ -4805,7 +4883,6 @@ const RichEditorPane = ({
               <div
                 onMouseOver={handleEditorMouseOver}
                 onMouseOut={handleEditorMouseOut}
-                onClickCapture={handleEditorClickCapture}
                 onFocusCapture={handleEditorFocusCapture}
                 onBlurCapture={handleEditorBlurCapture}
               >

@@ -706,6 +706,39 @@ textarea {
   transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
 }
 
+.edgeever-pdf-attachment-node {
+  display: block;
+  margin: 0.75rem 0 1rem;
+}
+
+.pdf-viewer-action {
+  display: inline-flex;
+  width: 2rem;
+  height: 2rem;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.45rem;
+  color: rgb(var(--slate-500-rgb));
+  transition: color 150ms ease, background 150ms ease;
+}
+
+.pdf-viewer-action:hover:not(:disabled),
+.pdf-viewer-action.is-active {
+  background: var(--brand-green-soft);
+  color: var(--brand-green-text);
+}
+
+.pdf-viewer-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+}
+
+.pdf-viewer-action svg {
+  width: 1rem;
+  height: 1rem;
+}
+
 .ProseMirror li:has(> p > a[href*="/api/v1/resources/"]) {
   margin-bottom: 0.25rem;
 }
@@ -729,6 +762,26 @@ textarea {
   border-color: rgb(var(--slate-300-rgb) / 0.8);
   background: rgb(var(--slate-100-rgb));
   color: rgb(var(--slate-800-rgb));
+}
+
+.ProseMirror .edgeever-pdf-viewer a.edgeever-attachment-link,
+.ProseMirror .edgeever-pdf-viewer a[href*="/api/v1/resources/"] {
+  max-width: none;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  font-size: inherit;
+}
+
+.ProseMirror .edgeever-pdf-viewer a.edgeever-attachment-link::before,
+.ProseMirror .edgeever-pdf-viewer a[href*="/api/v1/resources/"]::before {
+  content: none;
+}
+
+.ProseMirror .edgeever-pdf-viewer a.pdf-viewer-action:hover {
+  background: var(--brand-green-soft);
+  color: var(--brand-green-text);
 }
 
 .ProseMirror ul,
@@ -1173,7 +1226,9 @@ textarea {
   color: #94a3b8;
   content: attr(data-placeholder);
   float: left;
+  font-size: inherit;
   height: 0;
+  line-height: inherit;
   pointer-events: none;
 }
 

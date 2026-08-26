@@ -22,4 +22,5 @@ export * from "./sharing";
 export * from "./sync";
 export * from "./desktop-rpc";
 export * from "./note-image-card";
+export * from "./pdf-attachment";
 export * from "./types";
