@@ -83,6 +83,13 @@ import { EditorOutline } from "./EditorOutline";
 import { EditorTagPicker } from "./EditorTagPicker";
 import { useAiBubbleMenu } from "./editor/useAiBubbleMenu";
 import {
+  ImageUploadPlaceholderExtension,
+  addImageUploadPlaceholder,
+  createImageUploadPlaceholder,
+  removeImageUploadPlaceholder,
+  waitForImageSourceReady,
+} from "./editor/image-upload-placeholder";
+import {
   clampResourceInsertionTarget,
   clearNodeSelectionAtDocumentEnd,
   getResourceInsertionTarget,
@@ -217,6 +224,7 @@ import {
 } from "./editor/ResizableImage";
 import { ImageViewer } from "./editor/ImageViewer";
 import { PdfAttachment } from "./editor/PdfAttachment";
+import { FileAttachment } from "./editor/FileAttachment";
 import {
   createNoteSearchHighlightPlugin,
   formatNoteSearchMatchLabel,
@@ -1211,6 +1219,16 @@ const RichEditorPane = ({
 
     const targetMemoId = currentMemo.id;
     const interactionVersionAtRequest = editorCanvasInteractionVersionRef.current;
+    const placeholderPosition = currentEditor.state.selection.from;
+    const imagePlaceholders = files
+      .filter((file) => SUPPORTED_PASTE_IMAGE_TYPES.has(file.type))
+      .map((file) => createImageUploadPlaceholder(
+        file,
+        t("editor.uploadState.imagePreparing"),
+      ));
+    imagePlaceholders.forEach((placeholder) => {
+      addImageUploadPlaceholder(currentEditor, placeholder, placeholderPosition);
+    });
 
     void resourceInsertionLimit(async () => {
       const insertionEditor = editorRef.current;
@@ -1256,6 +1274,10 @@ const RichEditorPane = ({
         void queryClient.invalidateQueries({ queryKey: ["resources"] });
       }
 
+      await Promise.all(successfulResults.map(({ value: resource }) =>
+        resource.kind === "image" ? waitForImageSourceReady(resource.url) : Promise.resolve()
+      ));
+
       const activeEditor = editorRef.current;
       if (memoRef.current?.id !== targetMemoId || !isEditorReady(activeEditor)) {
         setImageUploadState("idle");
@@ -1283,6 +1305,7 @@ const RichEditorPane = ({
               attrs: {
                 url: resource.url,
                 label: t("editor.attachmentLabel", { filename }),
+                displayMode: "compact",
               },
             }],
           };
@@ -1290,12 +1313,13 @@ const RichEditorPane = ({
         return {
           type: "paragraph",
           content: [{
-            type: "text",
-            text: t("editor.attachmentLabel", { filename }),
-            marks: [{
-              type: "link",
-              attrs: { href: resource.url, target: "_blank", class: "edgeever-attachment-link" },
-            }],
+            type: "edgeeverFileAttachment",
+            attrs: {
+              url: resource.url,
+              label: t("editor.attachmentLabel", { filename }),
+              filename,
+              mimeType: file.type,
+            },
           }],
         };
       });
@@ -1330,6 +1354,11 @@ const RichEditorPane = ({
       } else {
         setImageUploadState("idle");
       }
+    }).finally(() => {
+      const placeholderEditor = editorRef.current;
+      imagePlaceholders.forEach((placeholder) => {
+        removeImageUploadPlaceholder(placeholderEditor, placeholder);
+      });
     });
   }, [queryClient, repository, resourceInsertionLimit, t]);
 
@@ -1344,12 +1373,14 @@ const RichEditorPane = ({
       EdgeEverCodeBlock.configure({ lowlight: codeBlockLowlight, defaultLanguage: "plaintext" }),
       MergeDivider,
       PdfAttachment,
+      FileAttachment,
       ...createEdgeEverMathematics(),
       ThemeBlock,
       ResizableImage.configure({
         allowBase64: false,
         inline: false,
       }),
+      ImageUploadPlaceholderExtension,
       TableKit.configure({
         table: { renderWrapper: true },
       }),
@@ -1836,10 +1867,20 @@ const RichEditorPane = ({
       );
       if (clickedEmptyCanvas) {
         editorCanvasInteractionVersionRef.current += 1;
-        const clearedNodeSelection = Boolean(editor && clearNodeSelectionAtDocumentEnd(editor));
-        if (editor && clearedNodeSelection) {
-          window.requestAnimationFrame(() => editor.commands.focus());
-        }
+        // This handler runs in capture phase, before ProseMirror translates the
+        // click coordinates into a selection. In a desktop WebView that later
+        // selection can map the empty area beside/below a block image back onto
+        // the image, undoing an immediate clear. Reconcile after ProseMirror's
+        // click handling has completed instead.
+        window.requestAnimationFrame(() => {
+          const activeEditor = editorRef.current;
+          if (activeEditor !== editor || !isEditorReady(activeEditor)) {
+            return;
+          }
+          if (clearNodeSelectionAtDocumentEnd(activeEditor)) {
+            activeEditor.commands.focus();
+          }
+        });
       }
     }
   }, [editor, onOpenMemo, showEditorLinkOpenHint]);

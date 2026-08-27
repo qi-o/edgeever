@@ -11,18 +11,11 @@ import "yet-another-react-lightbox/plugins/thumbnails.css";
 import {
   Archive,
   HardDrive,
-  ImageIcon,
-  File as FileIcon,
   ExternalLink,
   ChevronLeft,
   Search,
   Grid,
   List,
-  FileText,
-  FileSpreadsheet,
-  FileArchive,
-  Music,
-  Video,
   X,
   Loader2,
 } from "lucide-react";
@@ -35,6 +28,7 @@ import type { EdgeEverRepository } from "@/lib/repository";
 import { isPdfAttachment, type ResourceListItem } from "@edgeever/shared";
 import { PdfViewer } from "@/components/pdf/PdfViewer";
 import { PdfThumbnail } from "@/components/pdf/PdfThumbnail";
+import { AttachmentFileIcon } from "@/components/attachments/AttachmentFileIcon";
 
 export const formatBytes = (bytes: number) => {
   if (!Number.isFinite(bytes) || bytes <= 0) {
@@ -64,53 +58,6 @@ const DOCUMENT_MIME_TYPES = new Set([
   "text/css",
   "text/javascript",
 ]);
-
-const getFileIcon = (mimeType: string | null, filename: string | null) => {
-  const mime = (mimeType || "").toLowerCase();
-  const ext = (filename || "").split(".").pop()?.toLowerCase() || "";
-
-  if (mime.startsWith("image/")) return <ImageIcon className="h-8 w-8 text-emerald-500" />;
-  if (mime.startsWith("audio/")) return <Music className="h-8 w-8 text-sky-500" />;
-  if (mime.startsWith("video/")) return <Video className="h-8 w-8 text-rose-500" />;
-
-  if (mime === "application/pdf" || ext === "pdf") {
-    return <FileText className="h-8 w-8 text-rose-600" />;
-  }
-
-  if (
-    mime.includes("spreadsheet") ||
-    mime.includes("excel") ||
-    ext === "xls" ||
-    ext === "xlsx" ||
-    ext === "csv"
-  ) {
-    return <FileSpreadsheet className="h-8 w-8 text-green-600" />;
-  }
-
-  if (
-    mime.includes("word") ||
-    mime.includes("officedocument.wordprocessingml") ||
-    ext === "doc" ||
-    ext === "docx"
-  ) {
-    return <FileText className="h-8 w-8 text-blue-600" />;
-  }
-
-  if (
-    mime.includes("zip") ||
-    mime.includes("tar") ||
-    mime.includes("rar") ||
-    mime.includes("gzip") ||
-    ext === "zip" ||
-    ext === "rar" ||
-    ext === "tar" ||
-    ext === "gz"
-  ) {
-    return <FileArchive className="h-8 w-8 text-amber-500" />;
-  }
-
-  return <FileIcon className="h-8 w-8 text-slate-400" />;
-};
 
 interface AssetsPaneProps {
   onClose: () => void;
@@ -390,7 +337,7 @@ export const AssetsPane = ({ onClose, repository }: AssetsPaneProps) => {
                       />
                     ) : (
                       <div className="flex flex-col items-center gap-1.5 p-3 text-center">
-                        {getFileIcon(resource.mimeType, resource.filename)}
+                        <AttachmentFileIcon mimeType={resource.mimeType} filename={resource.filename} />
                         <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[9px] font-bold text-slate-500 uppercase tracking-wider">
                           {(resource.filename || "").split(".").pop() || "FILE"}
                         </span>
@@ -470,7 +417,7 @@ export const AssetsPane = ({ onClose, repository }: AssetsPaneProps) => {
                         className="p-1"
                       />
                     ) : (
-                      getFileIcon(resource.mimeType, resource.filename)
+                      <AttachmentFileIcon mimeType={resource.mimeType} filename={resource.filename} />
                     )}
                   </div>
 

@@ -5,6 +5,7 @@ import { Markdown, MarkdownManager } from "@tiptap/markdown";
 import StarterKit from "@tiptap/starter-kit";
 import { MergeDivider, MERGE_DIVIDER_NODE_TYPE } from "./merge-divider";
 import { PdfAttachment, PDF_ATTACHMENT_NODE_TYPE, upgradeStandalonePdfLinks } from "./pdf-attachment";
+import { FileAttachment, FILE_ATTACHMENT_NODE_TYPE, upgradeStandaloneFileLinks } from "./file-attachment";
 import {
   BLOCK_MATH_NODE_TYPE,
   createEdgeEverMarkdownMathematics,
@@ -27,9 +28,19 @@ export {
 export {
   PdfAttachment,
   PDF_ATTACHMENT_NODE_TYPE,
+  PDF_DISPLAY_MODES,
   isPdfAttachment,
+  resolvePdfDisplayMode,
   upgradeStandalonePdfLinks,
 } from "./pdf-attachment";
+export type { PdfDisplayMode } from "./pdf-attachment";
+
+export {
+  FileAttachment,
+  FILE_ATTACHMENT_NODE_TYPE,
+  isFileAttachmentLink,
+  upgradeStandaloneFileLinks,
+} from "./file-attachment";
 
 export type TiptapTextNode = {
   type: "text";
@@ -84,6 +95,7 @@ const markdownManager = new MarkdownManager({
     TableKit,
     Image,
     PdfAttachment,
+    FileAttachment,
     MergeDivider,
     ...createEdgeEverMarkdownMathematics(),
     Markdown.configure({
@@ -119,7 +131,7 @@ export const resolveMemoContentDoc = (
   contentMarkdown: string | null | undefined
 ): TiptapDoc => {
   const currentDoc = contentJson && Array.isArray(contentJson.content)
-    ? upgradeStandalonePdfLinks(upgradeLegacyAttachmentLinks(contentJson))
+    ? upgradeStandaloneFileLinks(upgradeStandalonePdfLinks(upgradeLegacyAttachmentLinks(contentJson)))
     : emptyDoc();
   if (
     !contentMarkdown?.trim() ||
@@ -130,6 +142,7 @@ export const resolveMemoContentDoc = (
     docContainsNodeType(currentDoc, BLOCK_MATH_NODE_TYPE) ||
     docContainsNodeType(currentDoc, INLINE_MATH_NODE_TYPE)
     || docContainsNodeType(currentDoc, PDF_ATTACHMENT_NODE_TYPE)
+    || docContainsNodeType(currentDoc, FILE_ATTACHMENT_NODE_TYPE)
   ) {
     return currentDoc;
   }
@@ -215,7 +228,7 @@ export const docToText = (doc: unknown): string => {
       }
     }
 
-    if (current.type === PDF_ATTACHMENT_NODE_TYPE) {
+    if (current.type === PDF_ATTACHMENT_NODE_TYPE || current.type === FILE_ATTACHMENT_NODE_TYPE) {
       const label = getStringAttr(current.attrs, "label");
       if (label) pieces.push(label);
     }
@@ -271,7 +284,7 @@ export const countMemoCharacters = (doc: unknown): number => {
       pieces.push(current.text);
     }
 
-    if (current.type === PDF_ATTACHMENT_NODE_TYPE) {
+    if (current.type === PDF_ATTACHMENT_NODE_TYPE || current.type === FILE_ATTACHMENT_NODE_TYPE) {
       const label = getStringAttr(current.attrs, "label");
       if (label) pieces.push(label);
     }

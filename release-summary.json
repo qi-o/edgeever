@@ -1,21 +1,13 @@
 {
-  "version": "1.43.0",
+  "version": "1.44.0",
   "changes": {
     "en-US": [
-      "Preview attached PDFs directly in notes with continuous scrolling, zoom, fullscreen, download, external-open controls, and a compact fallback for document-heavy workflows.",
-      "Browse PDF resources visually with lazily rendered first-page thumbnails in the Assets pane, while failed or unsupported documents fall back predictably.",
-      "Keep the intended editor location stable when several images are pasted rapidly.",
-      "Make iOS download requirements clearer and improve the visual hierarchy of platform download actions.",
-      "Align editor placeholder typography with the surrounding writing experience.",
-      "Use GHCR as the documented official image source for more predictable Docker self-hosting updates."
+      "Display attached files as consistent compact cards with recognizable type icons; PDF cards now toggle preview on click and load reliably in the desktop app.",
+      "Keep image uploads visually stable in the editor and clear image selection predictably when clicking the canvas."
     ],
     "zh-CN": [
-      "在笔记内直接预览 PDF，支持连续滚动、缩放、全屏、下载、外部打开，并可折叠为紧凑附件卡片，改善文档密集型工作流。",
-      "在资源库中通过懒加载的 PDF 首页缩略图直观浏览文档；渲染失败或不受支持时会稳定回退。",
-      "快速连续粘贴多张图片时，编辑器会稳定保持预期的插入位置。",
-      "更清楚地提示 iOS 下载所需条件，并优化各平台下载操作的视觉层级。",
-      "统一编辑器占位文字与整体写作界面的排版表现。",
-      "将 GHCR 明确为官方镜像来源，使 Docker 自托管更新路径更清晰、可预期。"
+      "将附件统一显示为紧凑文件卡片并提供清晰的类型图标；PDF 卡片现在可单击切换预览，并在桌面端稳定加载。",
+      "图片上传时在编辑器中保持稳定的视觉占位，并在单击画布时可靠清除图片选中状态。"
     ]
   }
 }

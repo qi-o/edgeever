@@ -2,6 +2,11 @@ import { mergeAttributes, Node } from "@tiptap/core";
 import type { TiptapDoc, TiptapMark, TiptapNode, TiptapTextNode } from "./content";
 
 export const PDF_ATTACHMENT_NODE_TYPE = "edgeeverPdfAttachment" as const;
+export const PDF_DISPLAY_MODES = ["compact", "inline"] as const;
+export type PdfDisplayMode = (typeof PDF_DISPLAY_MODES)[number];
+
+export const resolvePdfDisplayMode = (value: unknown): PdfDisplayMode =>
+  value === "inline" ? "inline" : "compact";
 
 const PDF_LINK_PATTERN = /^\[([^\]]+)\]\(([^\s)]+)(?:\s+"[^"]*")?\)/;
 
@@ -31,6 +36,13 @@ export const PdfAttachment = Node.create({
         parseHTML: (element) => element.getAttribute("data-pdf-label") || "PDF",
         renderHTML: (attributes) => ({ "data-pdf-label": attributes.label || "PDF" }),
       },
+      displayMode: {
+        default: "compact",
+        parseHTML: (element) => resolvePdfDisplayMode(element.getAttribute("data-pdf-display-mode")),
+        renderHTML: (attributes) => ({
+          "data-pdf-display-mode": resolvePdfDisplayMode(attributes.displayMode),
+        }),
+      },
     };
   },
 
@@ -50,7 +62,7 @@ export const PdfAttachment = Node.create({
 
   parseMarkdown: (token) => ({
     type: PDF_ATTACHMENT_NODE_TYPE,
-    attrs: { url: token.url || "", label: token.label || "PDF" },
+    attrs: { url: token.url || "", label: token.label || "PDF", displayMode: "compact" },
   }),
 
   renderMarkdown: (node) => `[${escapeMarkdownLabel(String(node.attrs?.label || "PDF"))}](${String(node.attrs?.url || "")})`,
@@ -95,7 +107,7 @@ export const upgradeStandalonePdfLinks = (doc: TiptapDoc): TiptapDoc => {
             ...node,
             content: [{
               type: PDF_ATTACHMENT_NODE_TYPE,
-              attrs: { url: href, label: child.text },
+              attrs: { url: href, label: child.text, displayMode: "compact" },
             }],
           };
         }

@@ -23,6 +23,7 @@ import {
 } from "@edgeever/shared";
 import { createEdgeEverMathematics } from "@edgeever/shared/mathematics";
 import { PdfAttachment } from "@/components/editor/PdfAttachment";
+import { FileAttachment } from "@/components/editor/FileAttachment";
 
 const SharedImage = Image.extend({
   addAttributes() {
@@ -91,6 +92,7 @@ const SharedDocument = ({ share, token }: { share: PublicMemoShare; token: strin
       EdgeEverCodeBlock.configure({ lowlight: codeBlockLowlight, defaultLanguage: "plaintext" }),
       MergeDivider,
       PdfAttachment,
+      FileAttachment,
       ...createEdgeEverMathematics(),
       SharedThemeBlock,
       SharedImage.configure({ allowBase64: false, inline: false }),

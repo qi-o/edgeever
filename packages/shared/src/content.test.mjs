@@ -6,8 +6,10 @@ import {
   markdownToDoc,
   MERGE_DIVIDER_MARKDOWN_MARKER,
   MERGE_DIVIDER_NODE_TYPE,
+  FILE_ATTACHMENT_NODE_TYPE,
   PDF_ATTACHMENT_NODE_TYPE,
   mergeMemoDocs,
+  resolvePdfDisplayMode,
   resolveMemoContentDoc,
   resolveMemoContentMarkdown,
   resolveMergedMemoTitle,
@@ -36,7 +38,11 @@ describe("PDF attachment Markdown compatibility", () => {
       type: "paragraph",
       content: [{
         type: PDF_ATTACHMENT_NODE_TYPE,
-        attrs: { label: "Attachment: report.pdf", url: "/api/v1/resources/res_pdf/blob" },
+        attrs: {
+          label: "Attachment: report.pdf",
+          url: "/api/v1/resources/res_pdf/blob",
+          displayMode: "compact",
+        },
       }],
     });
     expect(docToMarkdown(doc)).toBe(markdown);
@@ -61,6 +67,74 @@ describe("PDF attachment Markdown compatibility", () => {
   test("renders PDF links nested in Markdown lists", () => {
     const doc = markdownToDoc("- [Product brief.pdf](/api/v1/resources/res_pdf/blob)");
     expect(doc.content[0]?.content?.[0]?.content?.[0]?.content?.[0]?.type).toBe(PDF_ATTACHMENT_NODE_TYPE);
+  });
+
+  test("defaults legacy values to compact and accepts the persisted inline mode", () => {
+    expect(resolvePdfDisplayMode(undefined)).toBe("compact");
+    expect(resolvePdfDisplayMode("expanded")).toBe("compact");
+    expect(resolvePdfDisplayMode("inline")).toBe("inline");
+  });
+
+  test("keeps a per-attachment display mode in rich content without changing Markdown", () => {
+    const richDoc = {
+      type: "doc",
+      content: [{
+        type: "paragraph",
+        content: [{
+          type: PDF_ATTACHMENT_NODE_TYPE,
+          attrs: {
+            label: "Attachment: report.pdf",
+            url: "/api/v1/resources/res_pdf/blob",
+            displayMode: "inline",
+          },
+        }],
+      }],
+    };
+
+    expect(resolveMemoContentDoc(richDoc, "[Attachment: report.pdf](/api/v1/resources/res_pdf/blob)"))
+      .toEqual(richDoc);
+    expect(docToMarkdown(richDoc)).toBe("[Attachment: report.pdf](/api/v1/resources/res_pdf/blob)");
+  });
+});
+
+describe("file attachment Markdown compatibility", () => {
+  test("parses a stored non-PDF resource link as an attachment card", () => {
+    const markdown = "[Attachment: budget.xlsx](/api/v1/resources/res_sheet/blob)";
+    const doc = markdownToDoc(markdown);
+
+    expect(doc.content[0]).toMatchObject({
+      type: "paragraph",
+      content: [{
+        type: FILE_ATTACHMENT_NODE_TYPE,
+        attrs: {
+          label: "Attachment: budget.xlsx",
+          filename: "budget.xlsx",
+          url: "/api/v1/resources/res_sheet/blob",
+        },
+      }],
+    });
+    expect(docToMarkdown(doc)).toBe(markdown);
+  });
+
+  test("keeps an ordinary standalone web link as text", () => {
+    const doc = markdownToDoc("[EdgeEver](https://edgeever.org)");
+    expect(doc.content[0]?.content?.[0]?.type).toBe("text");
+  });
+
+  test("upgrades a legacy standalone attachment link from rich content", () => {
+    const legacyDoc = {
+      type: "doc",
+      content: [{
+        type: "paragraph",
+        content: [{
+          type: "text",
+          text: "附件：archive.zip",
+          marks: [{ type: "link", attrs: { href: "/api/v1/resources/res_archive/blob" } }],
+        }],
+      }],
+    };
+
+    expect(resolveMemoContentDoc(legacyDoc, "").content[0]?.content?.[0]?.type).toBe(FILE_ATTACHMENT_NODE_TYPE);
   });
 });
 
