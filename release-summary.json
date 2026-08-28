@@ -1,13 +1,15 @@
 {
-  "version": "1.45.1",
+  "version": "1.45.2",
   "changes": {
     "en-US": [
-      "Render PDF attachments correctly in the desktop app after updating its compatibility runtime.",
-      "Keep the note list usable when one note fails to render, and recover safely without reopening the failing note after restart."
+      "Show actionable diagnostics when mobile sign-in fails, making instance, network, and security-policy issues easier to resolve.",
+      "Allow attachments to be deleted safely from the asset library, with recoverable retries when storage cleanup is interrupted.",
+      "Route Android app upgrades through trusted Google Play or GitHub sources instead of requesting in-app package-install permission."
     ],
     "zh-CN": [
-      "更新桌面端兼容运行时，确保 PDF 附件能够正常渲染。",
-      "单篇笔记渲染失败时保持笔记列表可用，并在重启后安全恢复，避免再次打开异常笔记。"
+      "移动端登录失败时显示可操作的诊断信息，帮助定位实例、网络与安全策略问题。",
+      "支持从附件库安全删除附件，并在存储清理中断时可靠重试。",
+      "Android 应用升级改为跳转 Google Play 或 GitHub 可信渠道，不再申请应用内安装软件包权限。"
     ]
   }
 }
