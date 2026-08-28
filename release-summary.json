@@ -1,15 +1,13 @@
 {
-  "version": "1.45.0",
+  "version": "1.45.1",
   "changes": {
     "en-US": [
-      "Display attachment types and file sizes consistently, with safer attachment rendering and editing across Web, Android, and iOS.",
-      "Load images and shared resources whose filenames contain Chinese or special characters correctly.",
-      "Keep Android local API forwarding available while the app is running to reduce request failures."
+      "Render PDF attachments correctly in the desktop app after updating its compatibility runtime.",
+      "Keep the note list usable when one note fails to render, and recover safely without reopening the failing note after restart."
     ],
     "zh-CN": [
-      "统一展示附件类型与文件大小，并提升 Web、Android 和 iOS 上附件渲染与编辑的兼容性。",
-      "修复中文或特殊字符文件名导致图片及共享资源无法正常加载的问题。",
-      "保持 Android 应用运行期间的本地 API 转发可用，减少请求失败。"
+      "更新桌面端兼容运行时，确保 PDF 附件能够正常渲染。",
+      "单篇笔记渲染失败时保持笔记列表可用，并在重启后安全恢复，避免再次打开异常笔记。"
     ]
   }
 }
