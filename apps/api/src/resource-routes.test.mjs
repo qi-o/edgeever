@@ -107,7 +107,7 @@ describe("resource route contracts", () => {
     expect(await response.json()).toMatchObject({ error: { code: "forbidden" } });
   });
 
-  test("serves PDF attachments inline while preserving their filename", async () => {
+  test("serves PDF attachments with UTF-8 filenames inline using an ASCII-safe header", async () => {
     const environment = createEnvironment();
     environment.storage.resources = {
       get: async () => ({
@@ -116,7 +116,11 @@ describe("resource route contracts", () => {
         writeHttpMetadata: () => {},
       }),
     };
-    const response = await createApp(agentAuth, async () => ({ ...resourceRow, storage_config_id: null })).request(
+    const response = await createApp(agentAuth, async () => ({
+      ...resourceRow,
+      filename: "季度报告.pdf",
+      storage_config_id: null,
+    })).request(
       "/api/v1/resources/res_1/blob",
       {},
       environment,
@@ -124,7 +128,9 @@ describe("resource route contracts", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("Content-Type")).toBe("application/pdf");
-    expect(response.headers.get("Content-Disposition")).toStartWith("inline;");
+    expect(response.headers.get("Content-Disposition")).toBe(
+      "inline; filename=\"download.pdf\"; filename*=UTF-8''%E5%AD%A3%E5%BA%A6%E6%8A%A5%E5%91%8A.pdf",
+    );
     expect(response.headers.get("Accept-Ranges")).toBe("bytes");
   });
 

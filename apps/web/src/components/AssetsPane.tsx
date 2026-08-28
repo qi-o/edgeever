@@ -469,6 +469,8 @@ export const AssetsPane = ({ onClose, repository }: AssetsPaneProps) => {
           key={pdfPreview.id}
           url={pdfPreview.url}
           label={pdfPreview.filename || pdfPreview.id}
+          filename={pdfPreview.filename || undefined}
+          byteSize={pdfPreview.byteSize}
           fullscreen
           onRequestClose={() => setPdfPreview(null)}
           onPrevious={pdfResources.length > 1 ? showPreviousPdf : undefined}
