@@ -145,6 +145,16 @@ const writeDiagnostic = async (event, details = {}) => {
   }
 };
 
+const desktopRuntimeSystemInfo = () => ({
+  appVersion: app.getVersion(),
+  platform: process.platform,
+  architecture: process.arch,
+  osVersion: process.getSystemVersion?.() || "unknown",
+  osRelease: operatingSystemRelease(),
+  electron: process.versions.electron || "unknown",
+  chrome: process.versions.chrome || "unknown",
+});
+
 const desktopDiagnosticSystemInfo = async () => {
   let gpu = "unknown";
   let gpuFeatures = "unknown";
@@ -168,13 +178,7 @@ const desktopDiagnosticSystemInfo = async () => {
     // Some renderer failures can also make GPU feature inspection unavailable.
   }
   return {
-    appVersion: app.getVersion(),
-    platform: process.platform,
-    architecture: process.arch,
-    osVersion: process.getSystemVersion?.() || "unknown",
-    osRelease: operatingSystemRelease(),
-    electron: process.versions.electron || "unknown",
-    chrome: process.versions.chrome || "unknown",
+    ...desktopRuntimeSystemInfo(),
     gpu,
     gpuFeatures,
   };
@@ -911,6 +915,7 @@ app.whenReady().then(async () => {
     return result;
   });
   ipcMain.handle("desktop:sidecar-status", () => ({ available: Boolean(sidecar), path: sidecarPath, scope: sidecarScopeKey }));
+  ipcMain.handle("desktop:system-info", () => desktopRuntimeSystemInfo());
   ipcMain.handle("desktop:set-account-scope", async (_event, accountId) => {
     const normalizedAccountId = typeof accountId === "string" && accountId.trim() ? accountId.trim() : null;
     const nextScopeKey = accountScopeKey(configuredApiBaseUrl, normalizedAccountId);

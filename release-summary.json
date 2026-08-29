@@ -1,17 +1,17 @@
 {
-  "version": "1.47.0",
+  "version": "1.48.0",
   "changes": {
     "en-US": [
-      "Desktop sync issues can now open a prefilled GitHub report with diagnostics, making failures easier to report and resolve.",
-      "Workspace shortcuts now provide a single, predictable home for plugin actions, while duplicate Marketplace and AI prompt entries have been removed.",
-      "The editor now recovers from stalled browser storage, preserves an emergency draft, and offers retry or copy actions instead of leaving saves stuck.",
-      "Large sync batches now fetch change details in bounded groups, preventing bulk imports and other high-volume updates from failing at query limits."
+      "Expand system diagnostics across Web, desktop, Android, and iOS, with clearer cloud and client details for troubleshooting.",
+      "Make background synchronization more predictable and prevent the desktop editor from reloading after creating a note.",
+      "Refine memo list spacing for a more consistent Web layout.",
+      "Open Android updates in the correct app store or download destination for each installation source."
     ],
     "zh-CN": [
-      "桌面端同步问题现在可直接打开预填诊断信息的 GitHub 报告，便于反馈和排查故障。",
-      "工作区快捷入口现在集中承载插件操作，并移除了重复的插件市场与 AI 提示词入口。",
-      "编辑器现在可从浏览器本地存储卡顿中恢复，保留应急草稿并提供重试或复制操作，避免保存一直停滞。",
-      "大批量同步现在会分组获取变更详情，避免批量导入等高频更新因查询数量限制而失败。"
+      "扩展 Web、桌面端、Android 和 iOS 的系统诊断信息，清晰区分云端与客户端详情，便于排查问题。",
+      "让后台同步节奏更稳定，并避免桌面端新建笔记后编辑器意外重新加载。",
+      "优化备忘录列表间距，使 Web 界面布局更加一致。",
+      "根据 Android 应用的安装来源，将更新正确引导至对应应用商店或下载地址。"
     ]
   }
 }

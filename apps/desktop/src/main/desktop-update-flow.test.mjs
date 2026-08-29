@@ -24,6 +24,14 @@ describe("desktop update flow", () => {
     expect(systemInfoSource).toContain('t("systemInfo.desktopUpdateCurrent")');
   });
 
+  test("shares precise desktop runtime diagnostics with the system information panel", () => {
+    expect(mainSource).toContain('ipcMain.handle("desktop:system-info", () => desktopRuntimeSystemInfo())');
+    expect(preloadSource).toContain('systemInfo: () => ipcRenderer.invoke("desktop:system-info")');
+    expect(systemInfoSource).toContain("getClientRuntimeDiagnostics");
+    expect(systemInfoSource).toContain('t("systemInfo.runtimeEngine")');
+    expect(systemInfoSource).toContain('t("systemInfo.connectionSection")');
+  });
+
   test("rechecks for updates while a packaged app remains open", () => {
     expect(mainSource).toContain('checkForDesktopUpdate("startup", { force: true })');
     expect(mainSource).toContain('checkForDesktopUpdate("interval", { force: true })');
