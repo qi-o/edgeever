@@ -170,7 +170,12 @@ export const zhCN = {
       discard: "放弃本地修改",
       discardTitle: "放弃这项本地修改？",
       discardDescription: "该同步项中尚未上传的内容会被永久删除。其他笔记和云端数据不会受到影响。",
-      copyDiagnostics: "复制脱敏诊断",
+      reportIssue: "反馈问题",
+      reportTitlePrefix: "[同步] 桌面端同步需要处理",
+      reportContentHeading: "问题描述",
+      reportContentPrompt: "请补充问题现象、预期结果，以及可能有助于复现同步问题的操作步骤。",
+      reportDiagnosticsHeading: "自动采集的同步诊断",
+      reportDiagnosticsNotice: "以下诊断由 EdgeEver 在本地生成并脱敏，请在提交前检查。",
       operations: {
         memo_create: "新建笔记",
         memo_update: "更新笔记",
@@ -1083,6 +1088,8 @@ export const zhCN = {
       conflict: "有冲突",
       error: "保存失败",
       unsaved: "未保存",
+      storageUnavailable: "浏览器本地存储无响应。请保持当前页面打开，关闭其他 EdgeEver 标签页后重试。清除浏览器数据前请先复制本地草稿。",
+      storageRetry: "重试保存",
       conflictReason: {
         revisionWithVersions: "云端笔记已更新（本地基于版本 {{expected}}，云端已是 {{current}}）。常见原因：其他标签页、其他设备，或离线期间云端被改过。可先复制本地草稿，再采用云端版本后继续编辑。",
         revision: "云端笔记已在其他位置被更新。常见原因：其他标签页、其他设备，或离线期间云端被改过。可先复制本地草稿，再采用云端版本后继续编辑。",

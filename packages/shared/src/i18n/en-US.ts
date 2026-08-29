@@ -170,7 +170,12 @@ export const enUS = {
       discard: "Discard local changes",
       discardTitle: "Discard these local changes?",
       discardDescription: "Content that has not been uploaded from this sync item will be permanently deleted. Other notes and cloud data are not affected.",
-      copyDiagnostics: "Copy redacted diagnostics",
+      reportIssue: "Report issue",
+      reportTitlePrefix: "[Sync] Desktop sync needs attention",
+      reportContentHeading: "What happened",
+      reportContentPrompt: "Describe what happened, what you expected, and any steps that may help reproduce the sync problem.",
+      reportDiagnosticsHeading: "Automatically captured sync diagnostics",
+      reportDiagnosticsNotice: "EdgeEver generated and redacted these diagnostics locally. Review them before submitting.",
       operations: {
         memo_create: "Create note",
         memo_update: "Update note",
@@ -1083,6 +1088,8 @@ export const enUS = {
       conflict: "Conflict",
       error: "Save failed",
       unsaved: "Unsaved",
+      storageUnavailable: "Browser local storage stopped responding. Keep this page open, close other EdgeEver tabs, then retry. Copy the local draft before clearing any browser data.",
+      storageRetry: "Retry save",
       conflictReason: {
         revisionWithVersions: "The cloud note was updated (local base revision {{expected}}, cloud is {{current}}). Common causes: another browser tab, another device, or a cloud change while you were offline. Copy your local draft, then use the cloud version before editing again.",
         revision: "The cloud note was updated elsewhere. Common causes: another browser tab, another device, or a cloud change while you were offline. Copy your local draft, then use the cloud version before editing again.",

@@ -144,7 +144,9 @@ import { DEFAULT_IMAGE_WIDTH_PERCENT } from "@edgeever/shared/image-display";
 import { createEdgeEverMathematics } from "@edgeever/shared/mathematics";
 import { codeBlockLowlight, EdgeEverCodeBlock } from "@/lib/code-block";
 import { compressImageForUpload } from "@/lib/image-compression";
-import { localDb, type MemoUpdateSyncPayload } from "@/lib/local-db";
+import { LOCAL_DATABASE_INTERRUPTED_EVENT, localDb, selectNewestLocalDraft, type MemoUpdateSyncPayload } from "@/lib/local-db";
+import { LocalDatabaseUnavailableError } from "@/lib/local-database-recovery";
+import { persistEmergencyDraft, readEmergencyDraft, removeEmergencyDraft } from "@/lib/emergency-draft";
 import { getMemoUpdateQueueId, isMemoUpdateAlreadyApplied, queueMemoUpdate, shouldQueueMemoSaveError } from "@/lib/sync-queue";
 import {
   formatLocalDraftClipboardText,
@@ -238,7 +240,6 @@ import { getEditorScrollProgress, restoreEditorScrollProgress } from "./editor/e
 import { useEditorSaveStatus } from "./editor/useEditorSaveStatus";
 import { resolveEditorDraftState } from "./editor/editor-draft-state";
 import type { EdgeEverPluginHost, PluginEditorAdapter } from "@/lib/plugins/plugin-host";
-import { PluginToolbarMenu } from "@/components/plugins/PluginToolbarMenu";
 import {
   useEditorResourceActions,
   type AttachmentMenuTarget,
@@ -272,12 +273,8 @@ const IconTooltip = ({ label, children }: { label: string; children: ReactNode }
   </TooltipProvider>
 );
 
-const EmptyEditorHeader = ({ pluginHost, onOpenPluginManager }: {
-  pluginHost: EdgeEverPluginHost;
-  onOpenPluginManager: () => void;
-}) => (
+const EmptyEditorHeader = () => (
   <header className="hidden h-12 shrink-0 items-center justify-end gap-1 border-b border-slate-100 px-5 lg:flex">
-    <PluginToolbarMenu host={pluginHost} onManage={onOpenPluginManager} />
     <ThemeToggle />
   </header>
 );
@@ -701,7 +698,6 @@ type EditorPaneProps = {
   onOpenMemo?: (memoId: string) => void;
   onOpenAiPrompts?: () => void;
   pluginHost: EdgeEverPluginHost;
-  onOpenPluginManager: () => void;
 };
 
 type RichEditorPaneProps = EditorPaneProps & {
@@ -775,7 +771,6 @@ const RichEditorPane = ({
   onOpenMemo,
   onOpenAiPrompts,
   pluginHost,
-  onOpenPluginManager,
   onRequestMobileNativeEdit,
 }: RichEditorPaneProps) => {
   const { t, i18n } = useTranslation();
@@ -799,7 +794,12 @@ const RichEditorPane = ({
   } = useEditorSaveStatus();
   const [conflictActionPending, setConflictActionPending] = useState<"adopt" | "copy" | null>(null);
   const [conflictActionMessage, setConflictActionMessage] = useState<string | null>(null);
+  const [storageSaveError, setStorageSaveError] = useState(false);
   const [hydratedEditorMemoId, setHydratedEditorMemoId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setStorageSaveError(false);
+  }, [memo?.id]);
   const [editorStateVersion, setEditorStateVersion] = useState(0);
   const [editorContentVersion, setEditorContentVersion] = useState(0);
   const [imageUploadState, setImageUploadState] = useState<"idle" | "compressing" | "uploading" | "error">("idle");
@@ -2515,6 +2515,30 @@ const RichEditorPane = ({
   }, [getCurrentContentJson, tagsText, title]);
 
   useEffect(() => {
+    const handleLocalDatabaseInterrupted = () => {
+      const currentMemo = memoRef.current;
+      const contentJson = getCurrentContentJson();
+      if (currentMemo && contentJson && !currentMemo.isDeleted) {
+        persistEmergencyDraft({
+          memoId: currentMemo.id,
+          expectedRevision: currentMemo.revision,
+          title,
+          tagsText,
+          contentJson,
+          updatedAt: new Date().toISOString(),
+        });
+        setHasUnsavedChanges(true);
+      }
+      setStorageSaveError(true);
+      setSaveConflictInfo(null);
+      setSaveState("error");
+    };
+
+    window.addEventListener(LOCAL_DATABASE_INTERRUPTED_EVENT, handleLocalDatabaseInterrupted);
+    return () => window.removeEventListener(LOCAL_DATABASE_INTERRUPTED_EVENT, handleLocalDatabaseInterrupted);
+  }, [getCurrentContentJson, setHasUnsavedChanges, setSaveConflictInfo, setSaveState, tagsText, title]);
+
+  useEffect(() => {
     const currentEditor = editorRef.current;
     let cancelled = false;
 
@@ -2533,6 +2557,7 @@ const RichEditorPane = ({
       setIsMarkdownMode(false);
       setMobilePlainTextElementValue(mobileTextAreaRef.current, "");
       setSaveState("idle");
+      setStorageSaveError(false);
       if (isEditorReady(currentEditor)) {
         currentEditor.commands.clearContent();
       }
@@ -2600,12 +2625,13 @@ const RichEditorPane = ({
     memoRef.current = memo;
 
     void (async () => {
-      let [draft, queuedUpdate] = memo.isDeleted
+      let [indexedDbDraft, queuedUpdate] = memo.isDeleted
         ? [null, null]
         : await Promise.all([
             localDb.drafts.get(memo.id),
             localDb.syncQueue.get(getMemoUpdateQueueId(memo.id)),
           ]);
+      let draft = selectNewestLocalDraft(indexedDbDraft, readEmergencyDraft(memo.id));
 
       if (cancelled) {
         return;
@@ -2616,6 +2642,7 @@ const RichEditorPane = ({
           localDb.syncQueue.delete(queuedUpdate.id),
           localDb.drafts.delete(memo.id),
         ]);
+        removeEmergencyDraft(memo.id);
         draft = null;
         queuedUpdate = undefined;
       }
@@ -2623,6 +2650,7 @@ const RichEditorPane = ({
       const resolvedDraft = resolveEditorDraftState({ memo, draft, queuedUpdate });
       if (draft && !queuedUpdate && resolvedDraft.source === "memo") {
         await localDb.drafts.delete(memo.id);
+        removeEmergencyDraft(memo.id);
       }
       const {
         title: nextTitle,
@@ -3234,11 +3262,24 @@ const RichEditorPane = ({
         contentMarkdown: useMarkdownSourceEditor ? markdownSource : undefined,
         tags: parseTagsText(tagsText),
       };
+      persistEmergencyDraft({
+        memoId: currentMemo.id,
+        expectedRevision: currentMemo.revision,
+        title,
+        tagsText,
+        contentJson,
+        updatedAt: new Date().toISOString(),
+      });
       const { memo: localMemo } = await repository.updateMemo(currentMemo, payload);
       return { memo: localMemo, snapshot, queued: true };
     },
-    onMutate: () => setSaveState("saving"),
+    onMutate: () => {
+      setStorageSaveError(false);
+      setSaveState("saving");
+    },
     onSuccess: async ({ memo: savedMemo, snapshot, queued }) => {
+      setStorageSaveError(false);
+      removeEmergencyDraft(savedMemo.id);
       memoRef.current = savedMemo;
       const currentEditSession = editSessionRef.current;
       if (currentEditSession) {
@@ -3267,7 +3308,7 @@ const RichEditorPane = ({
       if (currentSnapshot() === snapshot) {
         setMobilePlainText(docToMarkdown(savedMemo.contentJson));
         setHasUnsavedChanges(false);
-        await localDb.drafts.delete(savedMemo.id);
+        void localDb.drafts.delete(savedMemo.id).catch(() => undefined);
         setSaveConflictInfo(null);
         setSaveState(queued ? "queued" : "saved");
         if (!queued) {
@@ -3282,6 +3323,13 @@ const RichEditorPane = ({
       setSaveState("idle");
     },
     onError: async (error) => {
+      if (error instanceof LocalDatabaseUnavailableError) {
+        setStorageSaveError(true);
+        setSaveConflictInfo(null);
+        setSaveState("error");
+        return;
+      }
+      setStorageSaveError(false);
       const sourceError = error instanceof MemoSaveRequestError ? error.originalError : error;
       const conflictInfo = getMemoSaveConflictInfo(sourceError);
 
@@ -3300,6 +3348,7 @@ const RichEditorPane = ({
           contentJson: error.payload.contentJson,
           updatedAt: new Date().toISOString(),
         });
+        removeEmergencyDraft(error.payload.memoId);
 
         setHasUnsavedChanges(false);
         setSaveConflictInfo(null);
@@ -3609,7 +3658,7 @@ const RichEditorPane = ({
     if (!hasUnsavedChangesRef.current) {
       setHasUnsavedChanges(true);
       setSaveState((current) => (current === "conflict" ? current : "idle"));
-    } else if (saveState === "saved") {
+    } else if (saveState === "saved" || saveState === "error") {
       setSaveState("idle");
     }
 
@@ -3631,7 +3680,8 @@ const RichEditorPane = ({
         memoRef.current.isDeleted ||
         !hasUnsavedChangesRef.current ||
         saveMutationPending ||
-        saveState === "conflict"
+        saveState === "conflict" ||
+        saveState === "error"
       ) {
         return;
       }
@@ -3700,7 +3750,8 @@ const RichEditorPane = ({
       !editor ||
       !hasUnsavedChanges ||
       saveMutationPending ||
-      saveState === "conflict"
+      saveState === "conflict" ||
+      saveState === "error"
     ) {
       return;
     }
@@ -3857,7 +3908,7 @@ const RichEditorPane = ({
   if (isLoading && !memo) {
     return (
       <div className="flex h-full min-w-0 flex-col bg-white">
-        <EmptyEditorHeader pluginHost={pluginHost} onOpenPluginManager={onOpenPluginManager} />
+        <EmptyEditorHeader />
         {selectionActionBar}
         <div className="flex min-h-0 flex-1 items-center justify-center text-sm text-slate-500">{t("editor.loading")}</div>
       </div>
@@ -3867,7 +3918,7 @@ const RichEditorPane = ({
   if (!memo) {
     return (
       <div className="flex h-full min-w-0 flex-col bg-white">
-        <EmptyEditorHeader pluginHost={pluginHost} onOpenPluginManager={onOpenPluginManager} />
+        <EmptyEditorHeader />
         {selectionActionBar}
         <div className="flex min-h-0 flex-1 items-center justify-center px-8 text-center">
           <div>
@@ -4401,7 +4452,6 @@ const RichEditorPane = ({
                 {deployedUpdateUnseen ? <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-emerald-500 ring-2 ring-white" /> : null}
               </Button>
             </IconTooltip>
-            <PluginToolbarMenu host={pluginHost} onManage={onOpenPluginManager} />
             <ThemeToggle />
             {!effectiveReadOnly && (
               <IconTooltip label={t("editor.save")}>
@@ -4756,6 +4806,42 @@ const RichEditorPane = ({
                 {conflictActionPending === "adopt"
                   ? t("editor.saveState.conflictAdopting")
                   : t("editor.saveState.conflictAdoptCloud")}
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-7 px-2.5 text-[11px] text-rose-800 hover:bg-rose-100"
+                disabled={conflictActionPending !== null}
+                onClick={() => void handleCopyLocalDraft()}
+              >
+                {t("editor.saveState.conflictCopyDraft")}
+              </Button>
+              {conflictActionMessage ? (
+                <span className="text-[11px] font-medium text-rose-700" role="status" aria-live="polite">
+                  {conflictActionMessage}
+                </span>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
+        {saveState === "error" && storageSaveError ? (
+          <div
+            className="flex flex-col gap-2 border-t border-rose-100 bg-rose-50 px-3 py-2 text-xs leading-relaxed text-rose-800 sm:px-5"
+            role="alert"
+          >
+            <div className="flex items-start gap-2">
+              <CircleAlert className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+              <span className="min-w-0 flex-1">{t("editor.saveState.storageUnavailable")}</span>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 pl-5">
+              <Button
+                size="sm"
+                variant="solid"
+                className="h-7 bg-rose-700 px-2.5 text-[11px] text-white hover:bg-rose-800"
+                disabled={saveMutationPending}
+                onClick={() => mutateSave()}
+              >
+                {t("editor.saveState.storageRetry")}
               </Button>
               <Button
                 size="sm"
