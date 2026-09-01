@@ -1095,6 +1095,10 @@ export const enUS = {
     previous: "Previous PDF",
     next: "Next PDF",
   },
+  audioPlayer: {
+    label: "Audio player: {{filename}}",
+    unavailable: "This audio format cannot be played on this device. You can still download it or open it externally.",
+  },
   editor: {
     imageScale: "Image scale",
     scaleTo: "Scale to {{percent}}%",

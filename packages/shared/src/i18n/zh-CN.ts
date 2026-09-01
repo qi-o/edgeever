@@ -1095,6 +1095,10 @@ export const zhCN = {
     previous: "上一个 PDF",
     next: "下一个 PDF",
   },
+  audioPlayer: {
+    label: "音频播放器：{{filename}}",
+    unavailable: "当前设备无法播放此音频格式，你仍可下载或在外部打开。",
+  },
   editor: {
     imageScale: "图片缩放",
     scaleTo: "缩放到 {{percent}}%",

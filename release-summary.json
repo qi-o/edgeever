@@ -1,17 +1,17 @@
 {
-  "version": "1.52.0",
+  "version": "1.53.0",
   "changes": {
     "en-US": [
-      "Plugins can now expose resource panels and embedded content through expanded, reusable host APIs.",
-      "The AI assistant can be moved around the workspace and now preserves input, refinement context, and on-screen visibility more reliably.",
-      "Desktop editing avoids redundant editor state hydration for a steadier writing experience.",
-      "Custom editor themes can now be imported and exported, while low-contrast choices show warnings without blocking intentional saves."
+      "Play supported audio attachments directly inside notes.",
+      "Preserve rich table content, including task lists, when switching between rich-text and Markdown editing.",
+      "Restore missing attachment sizes for legacy notes when the file metadata is still available.",
+      "Show familiar slash-command aliases in the editor so formatting commands are easier to find."
     ],
     "zh-CN": [
-      "插件现在可通过扩展后的通用宿主 API 提供资源面板与嵌入内容。",
-      "AI 助手现在可在工作区中拖动，并能更可靠地保留输入与优化上下文、保持完整可见。",
-      "桌面端编辑避免重复恢复编辑器状态，带来更稳定的写作体验。",
-      "自定义编辑器主题现在支持导入和导出；低对比度配色会给出提醒，但不再阻止用户有意保存。"
+      "支持在笔记中直接播放兼容的音频附件。",
+      "在富文本与 Markdown 编辑模式之间切换时，保留表格中的任务列表等富内容。",
+      "旧笔记的附件元数据仍可读取时，自动恢复缺失的文件大小。",
+      "在编辑器中显示常用斜杠命令别名，让格式命令更容易查找。"
     ]
   }
 }
