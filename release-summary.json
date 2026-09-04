@@ -1,13 +1,15 @@
 {
-  "version": "1.56.1",
+  "version": "1.57.0",
   "changes": {
     "en-US": [
-      "Keep editor metadata compact and focused on the last updated time, while preserving creation time in creation-sorted lists.",
-      "Prevent the desktop app from reporting a false startup timeout when its window is occluded."
+      "Add direct note editing gestures on mobile.",
+      "Keep system information accessible in compact desktop layouts.",
+      "Restore one-click Windows installation and silent upgrades; existing installation directories remain unchanged, while fresh installs no longer offer a custom path."
     ],
     "zh-CN": [
-      "编辑器元数据显示保持紧凑并聚焦最后更新时间，同时在按创建时间排序的列表中保留创建时间。",
-      "修复桌面应用窗口被遮挡时可能误报启动超时的问题。"
+      "移动端支持通过手势直接进入笔记编辑。",
+      "紧凑桌面布局中保持系统信息入口可用。",
+      "Windows 恢复一键安装和静默升级；现有安装目录保持不变，新安装不再提供自定义目录。"
     ]
   }
 }

@@ -741,8 +741,7 @@ const installDownloadedUpdate = () => {
   // The normal window close handler hides the app. Mark this as a real quit
   // before electron-updater closes windows so installation can proceed.
   isQuitting = true;
-  // Fresh Windows installs use an assisted installer, while updates must stay
-  // silent and preserve the installation directory selected by the user.
+  // Keep Windows updates silent and reuse the registered installation directory.
   autoUpdater.quitAndInstall(process.platform === "win32", true);
   return { started: true };
 };

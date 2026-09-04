@@ -4127,6 +4127,16 @@ const RichEditorPane = ({
                   <History className="h-4 w-4 text-slate-500" />
                   {t("editor.versionHistory")}
                 </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="flex h-9 w-full items-center gap-2 px-3 text-left text-sm text-slate-700 hover:bg-slate-50 cursor-pointer outline-none min-[1600px]:hidden"
+                  onClick={() => setSystemInfoOpen(true)}
+                >
+                  <span className="relative flex h-4 w-4 shrink-0 items-center justify-center">
+                    <Info className="h-4 w-4 text-slate-500" />
+                    {deployedUpdateUnseen ? <span className="absolute -right-0.5 -top-0.5 h-1.5 w-1.5 rounded-full bg-emerald-500 ring-1 ring-white" /> : null}
+                  </span>
+                  {t("systemInfo.title")}
+                </DropdownMenuItem>
                 {!effectiveReadOnly && (
                   <DropdownMenuItem
                     className={cn(

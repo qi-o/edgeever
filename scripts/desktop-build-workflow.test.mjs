@@ -95,10 +95,10 @@ describe("desktop release workflow", () => {
     expect(cargoConfig).toContain('target-feature=+crt-static');
     expect(desktopBuilderConfig).toContain([
       "nsis:",
-      "  oneClick: false",
-      "  allowToChangeInstallationDirectory: true",
+      "  oneClick: true",
       "  perMachine: false",
     ].join("\n"));
+    expect(desktopBuilderConfig).not.toContain("allowToChangeInstallationDirectory");
     expect(desktopPackageVerifier).toContain(
       'path.replaceAll("\\\\", "/")',
     );
