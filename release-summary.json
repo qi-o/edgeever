@@ -1,21 +1,13 @@
 {
-  "version": "1.55.0",
+  "version": "1.56.1",
   "changes": {
     "en-US": [
-      "Preview Paw mode with lightweight personality and memory, quiet discoveries, visible activity, and user-confirmed note actions.",
-      "Improve plugin setup with dedicated settings navigation, declarative native-style configuration, and generic AI and public HTTPS capabilities.",
-      "Make image uploads faster and reliably merge later uploads into adjacent galleries on web and mobile.",
-      "Polish editing with visible italic text, separate custom-theme code backgrounds from quotes, preserved focus after note creation, and remembered document outline visibility.",
-      "Clarify settings with a Paw beta badge, a privacy notice for AI models, and a more consistent visual hierarchy.",
-      "Improve self-hosted reliability by deriving credential encryption from authentication, reporting the deployment source, and aligning memo timestamps with the selected sort mode."
+      "Keep editor metadata compact and focused on the last updated time, while preserving creation time in creation-sorted lists.",
+      "Prevent the desktop app from reporting a false startup timeout when its window is occluded."
     ],
     "zh-CN": [
-      "新增 Paw 模式预览：提供轻量个性与记忆、静默发现、活动展示及需用户确认的笔记操作。",
-      "改进插件设置：新增独立设置入口、声明式原生风格配置，并开放通用 AI 与公共 HTTPS 能力。",
-      "提升图片上传速度，并在 Web 与移动端将后续上传可靠合并到相邻图库。",
-      "优化编辑体验：恢复斜体显示、分离自定义主题中的代码与引用背景、新建笔记后保持焦点，并记住文档大纲显示状态。",
-      "优化设置界面：为 Paw 添加 Beta 标识、增加 AI 模型隐私提示，并统一视觉层级。",
-      "提升自托管可靠性：从认证信息派生凭据加密、展示部署来源，并让备忘录时间戳与所选排序方式一致。"
+      "编辑器元数据显示保持紧凑并聚焦最后更新时间，同时在按创建时间排序的列表中保留创建时间。",
+      "修复桌面应用窗口被遮挡时可能误报启动超时的问题。"
     ]
   }
 }
