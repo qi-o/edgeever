@@ -1,19 +1,11 @@
 {
-  "version": "1.58.0",
+  "version": "1.58.1",
   "changes": {
     "en-US": [
-      "Add beta editable mind map and flowchart notes with faster creation, interactive connections, automatic layout, keyboard controls, and theme palettes.",
-      "Let Paw learn notebook and tag preferences within the current workspace, with clearer discovery notifications and controls.",
-      "Make plugin setup more predictable by consolidating scheduling in plugin settings, clarifying network access labels, and avoiding shared GitHub asset rate limits.",
-      "Show account-wide desktop synchronization failures in Sync Issues so failures outside the open notebook are no longer hidden.",
-      "Stop newly typed text after a link from unintentionally inheriting the hyperlink."
+      "Fix the diagram editor failing to open when creating or viewing mind map and flowchart notes in desktop and production builds."
     ],
     "zh-CN": [
-      "新增 Beta 可编辑思维导图与流程图笔记，支持快捷创建、交互连线、自动布局、键盘操作和主题配色。",
-      "Paw 可在当前工作区内学习笔记本与标签偏好，并提供更清晰的发现通知与控制。",
-      "将定时设置统一收纳到插件设置，明确网络访问标识，并规避共享 GitHub 资产限流，让插件配置更稳定可预期。",
-      "在“同步问题”中显示账户范围的桌面同步失败，避免当前笔记本之外的失败被隐藏。",
-      "修复在链接后继续输入时新文本意外继承超链接的问题。"
+      "修复桌面端及生产环境中新建或打开思维导图、流程图笔记时编辑器无法显示的问题。"
     ]
   }
 }
