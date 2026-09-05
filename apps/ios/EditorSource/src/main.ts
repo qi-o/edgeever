@@ -8,6 +8,7 @@ import Placeholder from "@tiptap/extension-placeholder";
 import CodeBlock from "@tiptap/extension-code-block";
 import { TableKit } from "@tiptap/extension-table";
 import { Markdown } from "@tiptap/markdown";
+import { EdgeEverLink } from "@edgeever/shared/editor-link";
 import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
 import { NodeSelection } from "@tiptap/pm/state";
 import mermaid from "mermaid";
@@ -750,7 +751,9 @@ function buildExtensions(placeholder: string) {
   return [
     StarterKit.configure({
       codeBlock: false,
+      link: false,
     }),
+    EdgeEverLink,
     NativeAttachmentMetadata,
     TaskList,
     TaskItem.configure({ nested: true }),

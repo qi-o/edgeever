@@ -192,6 +192,7 @@ export default defineConfig({
           "**/*mermaid.core-*.js",
           "**/vendor-mermaid-*.js",
           "**/*Diagram-*.js",
+          "**/*DiagramEditorPane-*.js",
           "**/vendor-codemirror-*.js",
           // PDF.js is loaded only when a PDF preview or thumbnail is rendered.
           // Keep its runtime out of the install-time app-shell precache and cache
