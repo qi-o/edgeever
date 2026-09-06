@@ -9,6 +9,7 @@ import {
   LayoutList,
   LayoutTemplate,
   BookPlus,
+  Boxes,
   ArrowDownWideNarrow,
   Notebook as NotebookIcon,
   Tags,
@@ -604,6 +605,11 @@ export const NotebookPane = ({
               <DropdownMenuItem onSelect={() => onCreateMemo("flowchart")}>
                 <Workflow className="h-4 w-4" />
                 {t("diagram.flowchart")}
+                <DiagramBetaBadge />
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => onCreateMemo("architecture")}>
+                <Boxes className="h-4 w-4" />
+                {t("diagram.architecture")}
                 <DiagramBetaBadge />
               </DropdownMenuItem>
             </DropdownMenuContent>

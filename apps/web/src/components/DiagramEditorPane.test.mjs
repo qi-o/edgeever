@@ -32,7 +32,7 @@ describe("diagram editor keyboard workflow", () => {
   });
 
   test("continues from text editing into the flowchart node picker", () => {
-    expect(source).toContain('else openFlowQuickCreateRef.current(editedNode)');
+    expect(source).toContain('else if (document.kind === "flowchart") openFlowQuickCreateRef.current(editedNode)');
   });
 });
 
@@ -68,16 +68,16 @@ describe("diagram editor canvas surface", () => {
     expect(source).not.toContain("graph.drawGrid");
   });
 
-  test("uses straight flowchart edges and presents the content smaller at the left", () => {
-    expect(source).toContain('connector: { name: kind === "mind-map" ? "smooth" : "normal" }');
+  test("uses restrained rounded edges and presents connected diagrams smaller at the left", () => {
+    expect(source).toContain('connector: { name: kind === "mind-map" ? "smooth" : "rounded"');
     expect(source).toContain('router: "normal"');
     expect(source).not.toContain('name: "manhattan"');
-    expect(source).toContain('maxScale: document.kind === "flowchart" ? 0.84 : 1');
+    expect(source).toContain('maxScale: document.kind === "mind-map" ? 1 : 0.84');
     expect(source).toContain("fitDiagramContent(graph, document, containerRef.current);");
   });
 
-  test("exposes flowchart-only connection handles with safe connection rules", () => {
-    expect(source).toContain('kind === "flowchart" ? { ports:');
+  test("exposes connection handles on flowcharts and architecture components with safe connection rules", () => {
+    expect(source).toContain("const hasPorts = isConnectableDiagram(kind) && node.shape !== \"boundary\"");
     expect(source).toContain("const FLOW_PORT_HIT_RADIUS = 14");
     expect(source).toContain("const FLOW_PORT_DOT_RADIUS = 7");
     expect(source).toContain('selector: "hitArea"');
@@ -87,13 +87,29 @@ describe("diagram editor canvas surface", () => {
     expect(source).toContain('pointerEvents: "none"');
     expect(globalStyles).toContain('[data-diagram-kind="flowchart"] .x6-widget-selection-box-node');
     expect(globalStyles).toContain("pointer-events: none !important");
-    expect(source).toContain('allowPort: document.kind === "flowchart"');
+    expect(source).toContain("allowPort: isConnectableDiagram(document.kind)");
     expect(source).toContain('allowBlank: document.kind === "flowchart"');
     expect(source).toContain("allowNode: false");
     expect(source).toContain("allowLoop: false");
     expect(source).toContain("allowMulti: false");
     expect(source).toContain("sourceCell.id !== targetCell.id");
     expect(source).toContain("data-diagram-kind={document.kind}");
+  });
+
+  test("provides architecture components, boundaries, semantic edges, and editable labels", () => {
+    expect(source).toContain('document.kind === "architecture"');
+    expect(source).toContain('addNode("service")');
+    expect(source).toContain('addNode("database")');
+    expect(source).toContain('addNode("boundary")');
+    expect(source).toContain('t("diagram.architectureConnectHint")');
+    expect(source).toContain("fitArchitectureBoundaries(graph)");
+    expect(source).toContain("parent.addChild(node)");
+    expect(source).toContain("updateSelectedEdgeLabel");
+    expect(source).toContain('t("diagram.edgeText")');
+    expect(source).toContain("ARCHITECTURE_NODE_ICONS");
+    expect(source).toContain('{ tagName: "path", selector: "architectureIcon" }');
+    expect(source).toContain('shape === "external" ? "7 5"');
+    expect(globalStyles).toContain('[data-diagram-kind="architecture"] .x6-port-body');
   });
 
   test("shows connection handles only on selected flowchart nodes", () => {

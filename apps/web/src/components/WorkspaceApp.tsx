@@ -15,7 +15,7 @@ import {
 } from "react";
 import { useInfiniteQuery, useQuery, useMutation, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import type { PluginPanelOpenOptions } from "@edgeever/plugin-api";
-import { Home, Search, UserRound, Plus, ChevronDown, ChevronRight, RefreshCw, X, FileText, Network, Workflow } from "lucide-react";
+import { Home, Search, UserRound, Plus, ChevronDown, ChevronRight, RefreshCw, X, FileText, Network, Workflow, Boxes } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import * as m from "motion/react-m";
 import { Button } from "@/components/ui/button";
@@ -395,6 +395,7 @@ const MobileBottomNav = ({
             <DropdownMenuItem onSelect={() => onCreateMemo()}><FileText className="h-4 w-4" />{t("diagram.normalNote")}</DropdownMenuItem>
             <DropdownMenuItem onSelect={() => onCreateMemo("mind-map")}><Network className="h-4 w-4" />{t("diagram.mindMap")}</DropdownMenuItem>
             <DropdownMenuItem onSelect={() => onCreateMemo("flowchart")}><Workflow className="h-4 w-4" />{t("diagram.flowchart")}</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => onCreateMemo("architecture")}><Boxes className="h-4 w-4" />{t("diagram.architecture")}</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
         <MobileBottomNavButton active={activeItem === "settings"} icon={<UserRound className="h-5 w-5" />} label={t("nav.mine")} onClick={onOpenSettings} />
@@ -2128,7 +2129,7 @@ export const WorkspaceApp = ({
     const diagram = kind ? createDefaultDiagramDocument(kind) : null;
     createMemoMutation.mutate({
       notebookId: targetNotebookId,
-      title: diagram ? (kind === "mind-map" ? t("diagram.mindMap") : t("diagram.flowchart")) : "",
+      title: diagram ? (kind === "mind-map" ? t("diagram.mindMap") : kind === "architecture" ? t("diagram.architecture") : t("diagram.flowchart")) : "",
       contentJson: diagram ? markdownToDoc(diagramFallbackMarkdown(diagram)) : undefined,
       contentMarkdown: diagram ? serializeDiagramDocument(diagram) : "",
       tags: [],

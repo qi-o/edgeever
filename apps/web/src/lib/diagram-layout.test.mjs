@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { createDefaultDiagramDocument } from "@edgeever/shared";
-import { compactFlowchartNodeSize, compactMindMapNodeSize, computeDiagramLayout } from "./diagram-layout.ts";
+import { compactArchitectureNodeSize, compactFlowchartNodeSize, compactMindMapNodeSize, computeDiagramLayout } from "./diagram-layout.ts";
 
 describe("diagram auto layout", () => {
   test("places mind-map children to the right of their root", () => {
@@ -63,5 +63,15 @@ describe("diagram auto layout", () => {
     expect(compactFlowchartNodeSize("process")).toEqual({ width: 124, height: 44 });
     expect(compactFlowchartNodeSize("terminator")).toEqual({ width: 116, height: 44 });
     expect(compactFlowchartNodeSize("decision")).toEqual({ width: 116, height: 72 });
+  });
+
+  test("lays out architecture components while preserving authored boundary geometry", () => {
+    const document = createDefaultDiagramDocument("architecture");
+    const positions = computeDiagramLayout(document);
+    expect(positions.client.x).toBeLessThan(positions.api.x);
+    expect(positions.api.x).toBeLessThan(positions.database.x);
+    expect(positions.system).toEqual({ x: 220, y: 64 });
+    expect(compactArchitectureNodeSize("database")).toEqual({ width: 150, height: 72 });
+    expect(compactArchitectureNodeSize("boundary", { width: 640, height: 360 })).toEqual({ width: 640, height: 360 });
   });
 });

@@ -29,6 +29,17 @@ export const compactFlowchartNodeSize = (shape: DiagramDocument["nodes"][number]
       : { width: 124, height: 44 }
 );
 
+export const compactArchitectureNodeSize = (
+  shape: DiagramDocument["nodes"][number]["shape"],
+  authored?: { width: number; height: number },
+) => {
+  if (shape === "boundary") return authored ?? { width: 560, height: 320 };
+  if (shape === "database") return { width: 150, height: 72 };
+  if (shape === "queue") return { width: 156, height: 60 };
+  if (shape === "security") return { width: 148, height: 68 };
+  return { width: 156, height: 64 };
+};
+
 const computeMindMapLayout = (
   document: DiagramDocument,
   options: DiagramLayoutOptions,
@@ -133,15 +144,22 @@ export const computeDiagramLayout = (
   });
   layoutGraph.setDefaultEdgeLabel(() => ({}));
 
-  for (const node of document.nodes) {
+  const layoutNodes = document.kind === "architecture"
+    ? document.nodes.filter((node) => node.shape !== "boundary")
+    : document.nodes;
+  const layoutNodeIds = new Set(layoutNodes.map((node) => node.id));
+  for (const node of layoutNodes) {
     layoutGraph.setNode(node.id, { width: node.width, height: node.height });
   }
   for (const edge of document.edges) {
-    layoutGraph.setEdge(edge.source, edge.target);
+    if (layoutNodeIds.has(edge.source) && layoutNodeIds.has(edge.target)) {
+      layoutGraph.setEdge(edge.source, edge.target);
+    }
   }
 
   runDagreLayout(layoutGraph);
   return Object.fromEntries(document.nodes.flatMap((node) => {
+    if (node.shape === "boundary") return [[node.id, { x: node.x, y: node.y }]];
     const position = layoutGraph.node(node.id) as { x: number; y: number } | undefined;
     if (!position) return [];
     return [[node.id, {

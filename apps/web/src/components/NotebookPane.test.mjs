@@ -28,7 +28,8 @@ test("marks diagram note types as beta without labeling regular notes", () => {
   const betaBadgeCount = createTypeMenu?.match(/<DiagramBetaBadge \/>/g)?.length;
 
   expect(regularNoteItem).not.toContain("DiagramBetaBadge");
-  expect(betaBadgeCount).toBe(2);
+  expect(createTypeMenu).toContain('onCreateMemo("architecture")');
+  expect(betaBadgeCount).toBe(3);
 });
 
 describe("NotebookPane client downloads", () => {
