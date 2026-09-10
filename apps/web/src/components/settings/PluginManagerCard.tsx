@@ -1,5 +1,5 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
-import { BookOpen, CalendarClock, Download, ExternalLink, History, PanelRightOpen, Play, Puzzle, RefreshCw, Settings2, Trash2 } from "lucide-react";
+import { BookOpen, CalendarClock, Download, ExternalLink, History, Play, Puzzle, RefreshCw, Settings2, Trash2 } from "lucide-react";
 import { Link } from "react-router";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -7,16 +7,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import type { EdgeEverPluginHost, InstalledExtension, RegisteredPluginCommand, RegisteredPluginPanel } from "@/lib/plugins/plugin-host";
+import type { EdgeEverPluginHost, InstalledExtension, RegisteredPluginCommand } from "@/lib/plugins/plugin-host";
 import { PluginCatalogCard } from "@/components/plugins/PluginCatalogCard";
-import { PluginPanelDialog } from "@/components/plugins/PluginPanelDialog";
 import { loadResolvedPluginMarketplace } from "@/lib/plugins/plugin-marketplace";
 import { GitHubMark } from "@/components/GitHubRepositoryLink";
 import { applyPluginUpdate, checkPluginUpdates, type PluginUpdateInfo } from "@/lib/plugins/plugin-updates";
 import { PluginUpdateDialog } from "@/components/plugins/PluginUpdateDialog";
 import { PluginSettingsSection } from "@/components/plugins/PluginSettingsSection";
 import { buildPluginCatalogItems, getPluginCatalogSourceKey } from "@/lib/plugins/plugin-catalog";
-import { getPluginDetailPage, getPluginDetailPath, hasPluginSettings, type PluginDetailPage } from "@/lib/plugins/plugin-navigation";
+import { getPluginDetailPage, getPluginDetailPath, hasPluginSettings, isPluginCardCommand, type PluginDetailPage } from "@/lib/plugins/plugin-navigation";
 import type { ScheduledTask } from "@edgeever/shared";
 import { api, getOrCreateClientDeviceId } from "@/lib/api";
 import { ScheduledTaskRunHistoryDialog } from "@/components/execution/ScheduledTaskRunHistoryDialog";
@@ -140,10 +139,8 @@ const PluginDetailView = ({
   commands,
   extension,
   host,
-  panels,
   pendingId,
   update,
-  onOpenPanel,
   onRunCommand,
   onToggle,
   onUninstall,
@@ -153,10 +150,8 @@ const PluginDetailView = ({
   commands: RegisteredPluginCommand[];
   extension: InstalledExtension;
   host: EdgeEverPluginHost;
-  panels: RegisteredPluginPanel[];
   pendingId: string | null;
   update?: PluginUpdateInfo;
-  onOpenPanel: (panel: RegisteredPluginPanel) => void;
   onRunCommand: (command: RegisteredPluginCommand) => void;
   onToggle: (enabled: boolean) => void;
   onUninstall: () => void;
@@ -261,16 +256,10 @@ const PluginDetailView = ({
                 {t("plugins.updates.update")}
               </Button>
             ) : null}
-            {commands.map((command) => (
+            {commands.filter(isPluginCardCommand).map((command) => (
               <Button key={command.id} size="sm" variant="outline" className="gap-1.5" disabled={pendingId === `${id}:${command.id}`} onClick={() => onRunCommand(command)}>
                 <Play className="h-3.5 w-3.5" />
                 {command.title}
-              </Button>
-            ))}
-            {panels.map((panel) => (
-              <Button key={panel.id} size="sm" variant="outline" className="gap-1.5" onClick={() => onOpenPanel(panel)}>
-                <PanelRightOpen className="h-3.5 w-3.5" />
-                {panel.title}
               </Button>
             ))}
             <Button size="sm" variant="ghost" className="ml-auto gap-1.5 text-rose-600 hover:bg-rose-50 hover:text-rose-700" disabled={pendingId === `remove:${id}`} onClick={onUninstall}>
@@ -309,7 +298,6 @@ export const PluginManagerCard = ({
   const [manuallyChecking, setManuallyChecking] = useState(false);
   const [lastManualCheckCount, setLastManualCheckCount] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [activePanel, setActivePanel] = useState<RegisteredPluginPanel | null>(null);
   const [pendingUpdate, setPendingUpdate] = useState<PluginUpdateInfo | null>(null);
   const [pendingTrustPluginId, setPendingTrustPluginId] = useState<string | null>(null);
   const marketplaceQuery = useQuery({ queryKey: ["plugin-marketplace", "v1"], queryFn: () => loadResolvedPluginMarketplace(), staleTime: 5 * 60_000 });
@@ -330,15 +318,6 @@ export const PluginManagerCard = ({
   const selectedExtension = selectedPluginId
     ? snapshot.extensions.find((extension) => extension.manifest.id === selectedPluginId)
     : undefined;
-  const activePanelPluginId = activePanel?.pluginId ?? null;
-  const activePanelId = activePanel?.id ?? null;
-  const activePanelRegistered = Boolean(activePanelPluginId && activePanelId && snapshot.panels.some(
-    (panel) => panel.pluginId === activePanelPluginId && panel.id === activePanelId
-  ));
-
-  useEffect(() => {
-    if (activePanelId && activePanelPluginId && !activePanelRegistered) setActivePanel(null);
-  }, [activePanelId, activePanelPluginId, activePanelRegistered]);
 
   const install = async () => {
     if (!manifestUrl.trim()) return;
@@ -489,7 +468,6 @@ export const PluginManagerCard = ({
               host={host}
               update={updateQuery.data?.updates.find((update) => update.pluginId === selectedExtension.manifest.id)}
               commands={snapshot.commands.filter((command) => command.pluginId === selectedExtension.manifest.id)}
-              panels={snapshot.panels.filter((panel) => panel.pluginId === selectedExtension.manifest.id)}
               pendingId={pendingId}
               onToggle={(enabled) => toggleExtension(selectedExtension, enabled)}
               onUpdate={() => {
@@ -500,7 +478,6 @@ export const PluginManagerCard = ({
                 `${selectedExtension.manifest.id}:${command.id}`,
                 () => host.runCommand(selectedExtension.manifest.id, command.id),
               )}
-              onOpenPanel={setActivePanel}
               onUninstall={() => void run(`remove:${selectedExtension.manifest.id}`, async () => {
                 await host.uninstall(selectedExtension.manifest.id);
                 onClosePlugin?.();
@@ -538,7 +515,6 @@ export const PluginManagerCard = ({
                 item={item}
                 update={updateQuery.data?.updates.find((update) => update.pluginId === item.id)}
                 commands={snapshot.commands.filter((command) => command.pluginId === item.id)}
-                panels={snapshot.panels.filter((panel) => panel.pluginId === item.id)}
                 pendingId={pendingId}
                 onOpenPlugin={onOpenPlugin}
                 onToggle={(enabled) => {
@@ -559,7 +535,6 @@ export const PluginManagerCard = ({
                   `${item.id}:${command.id}`,
                   () => host.runCommand(item.id, command.id),
                 )}
-                onOpenPanel={setActivePanel}
                 onUninstall={() => void run(`remove:${item.id}`, () => host.uninstall(item.id))}
               />
             ))}
@@ -568,7 +543,6 @@ export const PluginManagerCard = ({
           </>
         )}
 
-        <PluginPanelDialog host={host} panel={activePanel} onClose={() => setActivePanel(null)} />
         {pendingUpdate ? (
           <PluginUpdateDialog
             update={pendingUpdate}

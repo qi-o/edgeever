@@ -5,7 +5,6 @@ export {
   DIAGRAM_READABLE_MIN_SCALE,
   FLOWCHART_EDGE_ROUTER,
   FLOWCHART_LAYOUT_SPACING,
-  FLOWCHART_READABLE_MIN_SCALE,
   flowchartEdgeIsStraight,
   flowchartEdgePorts,
   flowchartFitsReadableViewport,

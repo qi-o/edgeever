@@ -41,16 +41,15 @@ export const flowchartEdgeIsStraight = (source: FlowchartBox, target: FlowchartB
 
 export const FLOWCHART_LAYOUT_SPACING = { rank: 56, node: 36 };
 
-// Auto layout and opening stay at reading size. Shrinking the whole graph into
-// the viewport makes large notes unreadable; show the start and let the canvas scroll.
+// Auto-fit may shrink the whole graph down to this scale. Below it, keep 100%
+// and start from the origin — never compress a large note into a postage stamp.
 export const DIAGRAM_READABLE_MIN_SCALE = 0.85;
-export const FLOWCHART_READABLE_MIN_SCALE = DIAGRAM_READABLE_MIN_SCALE;
 
 export const flowchartFitsReadableViewport = (
   bounds: { width: number; height: number },
   viewport: { width: number; height: number },
   padding = 32,
-  minScale = FLOWCHART_READABLE_MIN_SCALE,
+  minScale = DIAGRAM_READABLE_MIN_SCALE,
   maxScale = 1,
 ) => {
   const availableWidth = Math.max(viewport.width - padding * 2, 1);

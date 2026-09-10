@@ -314,23 +314,17 @@ describe("diagram auto layout", () => {
     expect(Math.hypot(loopCenter.x - b3Center.x, loopCenter.y - b3Center.y)).toBeLessThan(420);
   });
 
-  test("keeps flowchart viewports at reading size instead of shrinking the whole stack", () => {
+  test("caps auto-layout zoom at 100% and refuses to shrink below reading size", () => {
     expect(getDiagramLayoutViewport("flowchart")).toEqual({
       anchor: "center",
       maxScale: 1,
       minScale: DIAGRAM_READABLE_MIN_SCALE,
     });
-  });
-
-  test("keeps mind-map viewports at reading size instead of shrinking the whole tree", () => {
     expect(getDiagramLayoutViewport("mind-map")).toEqual({
       anchor: "root",
       maxScale: 1,
       minScale: DIAGRAM_READABLE_MIN_SCALE,
     });
-  });
-
-  test("keeps architecture viewports at reading size instead of shrinking the whole graph", () => {
     expect(getDiagramLayoutViewport("architecture")).toEqual({
       anchor: "leftmost",
       maxScale: 1,

@@ -139,6 +139,7 @@ import {
   type DiagramLayoutViewport,
 } from "@/lib/diagram-layout";
 import { applyDiagramScrollerFitOptions, diagramCanvasIsReady, isUsableDiagramBounds } from "@/lib/diagram-scroller-fit";
+import { DIAGRAM_ZOOM_SCALE_MAX, DIAGRAM_ZOOM_SCALE_MIN } from "@/lib/diagram-zoom";
 import { resolveDiagramPalette, type DiagramAppearance } from "@/lib/diagram-theme";
 import { isLocalMemoId } from "@/lib/local-mirror";
 import { isBrowserOffline } from "@/lib/network-status";
@@ -1152,11 +1153,10 @@ const diagramViewportSize = (graph: Graph, container: HTMLElement | null) => {
 
 const readDiagramContent = (graph: Graph, document: DiagramDocument) => {
   const policy = getDiagramLayoutViewport(document.kind);
-  const minScale = policy.minScale ?? 1;
   const focus = diagramReaderFocusNode(document);
   const cell = focus ? graph.getCellById(focus.id) : null;
   ensureDiagramPaperContainsNodes(graph);
-  zoomDiagram(graph, document.kind === "flowchart" ? 1 : minScale, true);
+  zoomDiagram(graph, 1, true);
   ensureDiagramPaperContainsNodes(graph);
   if (!cell?.isNode()) {
     centerDiagramContent(graph);
@@ -1187,19 +1187,16 @@ const fitDiagramContent = (
   container: HTMLElement | null,
   padding = 32,
   viewport?: DiagramLayoutViewport,
-  options: { readable?: boolean } = {},
 ) => {
   const policy = viewport ?? getDiagramLayoutViewport(document.kind);
   const bounds = diagramNodeBounds(graph);
   if (!bounds) return;
   ensureDiagramPaperContainsNodes(graph);
-  if (options.readable) {
-    const size = diagramViewportSize(graph, container);
-    const minScale = policy.minScale ?? 1;
-    if (size && !flowchartFitsReadableViewport(bounds, size, padding, minScale, policy.maxScale)) {
-      readDiagramContent(graph, document);
-      return;
-    }
+  const size = diagramViewportSize(graph, container);
+  const minScale = policy.minScale ?? 1;
+  if (size && !flowchartFitsReadableViewport(bounds, size, padding, minScale, policy.maxScale)) {
+    readDiagramContent(graph, document);
+    return;
   }
   // Fit every node, including mind-map branches left of the root. Zooming to a
   // visible subset or to edge paths lets Scroller shrink the paper and clip.
@@ -1604,7 +1601,7 @@ export const DiagramEditorPane = ({
       background: { color: diagramCanvasColor(document.kind, documentTheme, appearance) },
       grid: false,
       panning: false,
-      mousewheel: { enabled: true, modifiers: ["ctrl", "meta"], minScale: 0.3, maxScale: 2.5 },
+      mousewheel: { enabled: true, modifiers: ["ctrl", "meta"], minScale: DIAGRAM_ZOOM_SCALE_MIN, maxScale: DIAGRAM_ZOOM_SCALE_MAX },
       interacting: () => !readOnly && !spacePanActiveRef.current,
       connecting: {
         allowBlank: document.kind === "flowchart",
@@ -1694,7 +1691,7 @@ export const DiagramEditorPane = ({
       if (graphRef.current !== graph) return false;
       if (!diagramCanvasIsReady(canvasSurfaceRef.current)) return false;
       ensureDiagramPaperContainsNodes(graph);
-      fitDiagramContent(graph, document, containerRef.current, 32, undefined, { readable: true });
+      fitDiagramContent(graph, document, containerRef.current, 32);
       return true;
     };
     settleLoadedViewport();
@@ -2466,7 +2463,7 @@ export const DiagramEditorPane = ({
     if (document.kind === "mind-map") applyMindMapHierarchy(graph, themeRef.current, appearanceRef.current, structureRef.current);
     graph.stopBatch("layout");
     ensureDiagramPaperContainsNodes(graph);
-    fitDiagramContent(graph, document, containerRef.current, 40, layout.viewport, { readable: true });
+    fitDiagramContent(graph, document, containerRef.current, 40, layout.viewport);
     if (changed) {
       setDirty(savedSnapshotRef.current !== diagramEditorSnapshot(
         titleRef.current,
@@ -2933,17 +2930,11 @@ export const DiagramEditorPane = ({
           onUndo={() => runHistoryAction("undo")}
           zoomPercent={zoomPercent}
           onRead={document.kind === "flowchart" ? () => { if (graphRef.current) readDiagramContent(graphRef.current, document); } : undefined}
-          onFit={() => { const graph = graphRef.current; if (graph) fitDiagramContent(graph, document, containerRef.current); }}
-          onResetZoom={() => {
+          onZoomTo={(percent) => {
             const graph = graphRef.current;
             if (!graph) return;
+            zoomDiagram(graph, percent / 100, true);
             ensureDiagramPaperContainsNodes(graph);
-            zoomDiagram(graph, 1, true);
-            ensureDiagramPaperContainsNodes(graph);
-            const bounds = diagramNodeBounds(graph);
-            const scroller = getDiagramScroller(graph);
-            if (bounds && scroller) scroller.centerPoint(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
-            else if (bounds) graph.centerPoint(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
           }}
           onZoomIn={() => {
             const graph = graphRef.current;

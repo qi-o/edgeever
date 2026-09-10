@@ -366,7 +366,7 @@ export const MemoCard = ({
             </span>
           </button></TooltipTrigger><TooltipContent>{selectionControlLabel}</TooltipContent></Tooltip>
         )}
-        <Tooltip><TooltipTrigger asChild><button
+        <button
           className={cn(
             "min-w-0 flex-1 px-4 py-3.5 text-left touch-pan-y focus-visible:bg-slate-50 focus-visible:shadow-[inset_3px_0_0_rgb(148,163,184)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-slate-400/60 [-webkit-touch-callout:none] lg:py-3.5 transition-all duration-200",
             listDensity === "compact" && "py-2.5",
@@ -428,7 +428,7 @@ export const MemoCard = ({
               </span>
             ))}
           </div>
-        </button></TooltipTrigger><TooltipContent>{t("memoCard.interactionHint")}</TooltipContent></Tooltip>
+        </button>
         {!selectionMode && (
           <div
             className={cn(
