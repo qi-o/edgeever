@@ -1,11 +1,15 @@
 {
-  "version": "1.64.1",
+  "version": "1.65.0",
   "changes": {
     "en-US": [
-      "Keep the historical Docker entry path so NAS/GUI upgrades that still start scripts/self-hosted-server.mjs can boot after v1.63."
+      "Export selected notes as a Markdown ZIP with attachments from the note list. Unsynced notes are skipped, and notes in trash cannot be exported.",
+      "Keep diagram auto-layout grouped, compact, and readable. Switching notes refits the canvas, and a newly inserted mind-map topic stays in view after Tab.",
+      "Fix dark-mode colors so they follow the theme instead of leftover utility remaps, while PDF paper stays white."
     ],
     "zh-CN": [
-      "Docker 镜像保留 v1.62 的启动路径，避免 NAS/GUI 升级后因找不到 scripts/self-hosted-server.mjs 而无法启动。"
+      "笔记列表支持将选中笔记批量导出为带附件的 Markdown ZIP；未同步笔记会被跳过，回收站内笔记不可导出。",
+      "图表自动布局更紧凑、更易读；切换笔记后画布会重新适配，Tab 新建思维导图主题也会留在可视范围内。",
+      "修复深色模式下部分界面颜色与主题不一致的问题，PDF 预览仍保持白底。"
     ]
   }
 }
