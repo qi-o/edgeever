@@ -1,15 +1,17 @@
 {
-  "version": "1.66.0",
+  "version": "1.67.0",
   "changes": {
     "en-US": [
-      "Redesign mind map color palettes with adaptive contrast, and flatten the theme picker into a clean list.",
-      "Keep flowchart palettes from reverting to forest green after save or reopen.",
-      "Let desktop auto-restart even when the connected instance is behind, and show a quiet, platform-specific hint instead of holding the update."
+      "Stream AI note generation on desktop and mobile, and on the web when the model host allows a direct connection; proxied web replies stay complete, and the old streaming setting is gone.",
+      "Keep the bulk-move destination from snapping back to the current notebook, so Move actually relocates selected notes.",
+      "Paint filled buttons, badges, and progress bars with the brand green instead of a darker emerald.",
+      "Keep the diagram editor title bar on the theme surface so dark mode no longer puts light text on a white header."
     ],
     "zh-CN": [
-      "重做思维导图配色并按对比度自适应文字，主题选择改为干净的扁平列表。",
-      "避免流程图配色在保存或重新打开后变回森绿。",
-      "即使云端实例落后，桌面端也会自动重启更新；系统信息改为安静提示，并按 Cloudflare 或 Docker 给出对应更新方式。"
+      "桌面端和移动端的 AI 笔记生成改为实时流式输出；网页端在模型服务允许直连时同样流式返回，经实例代理时仍整段给出结果，并去掉原来的流式开关。",
+      "批量移动时目标笔记本不再被当前笔记本覆盖，移动操作会真正生效。",
+      "实心按钮、徽章和进度条改用品牌绿，不再偏深一档。",
+      "图表笔记标题栏改用主题表面色，避免暗色模式下浅色文字落在白底上。"
     ]
   }
 }
