@@ -199,6 +199,9 @@ export default defineConfig({
           // Keep its runtime out of the install-time app-shell precache and cache
           // it after first use instead.
           "**/vendor~pdf-*.js",
+          // Japanese is a first-class locale but is loaded on demand so Chinese
+          // and English PWA installs do not pay for that catalog up front.
+          "**/i18n-ja-*.js",
         ],
         navigateFallback: null,
         navigationPreload: true,
@@ -230,6 +233,17 @@ export default defineConfig({
               expiration: {
                 maxEntries: 500,
                 maxAgeSeconds: 60 * 60 * 24 * 90,
+              },
+            },
+          },
+          {
+            urlPattern: ({ url }) => /\/assets\/i18n-ja-/.test(url.pathname),
+            handler: "CacheFirst",
+            options: {
+              cacheName: "edgeever-optional-locales",
+              expiration: {
+                maxEntries: 8,
+                maxAgeSeconds: 60 * 60 * 24 * 30,
               },
             },
           },
@@ -292,7 +306,7 @@ export default defineConfig({
       ? false
       : {
           resolveDependencies: (_filename, dependencies) => dependencies.filter((dependency) =>
-            !/(?:vendor-code-highlight|vendor-(?:mermaid|D3|tiptap|prosemirror|floating|codemirror|x6|zod)|vendor-radix(?!-slot)|ui-primitives|ui-button-tooltip)/.test(dependency),
+            !/(?:vendor-code-highlight|vendor-(?:mermaid|D3|tiptap|prosemirror|floating|codemirror|x6|zod)|vendor-radix(?!-slot)|ui-primitives|ui-button-tooltip|i18n-ja-)/.test(dependency),
           ),
         },
     rolldownOptions: {
@@ -323,6 +337,11 @@ export default defineConfig({
               // that graph atomic, but leave TipTap's lightweight adapter in
               // the regular extension group so plain mobile code blocks do not
               // inherit the highlighter as a startup dependency.
+            },
+            {
+              name: "i18n-ja",
+              test: /[\\/]i18n[\\/](?:resources[\\/])?ja\.ts$/,
+              priority: 41,
             },
             {
               name: "vendor-react",

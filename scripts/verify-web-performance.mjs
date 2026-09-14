@@ -10,6 +10,7 @@ assert.match(serviceWorker, /edgeever-resource-blobs/, "PWA must provide a runti
 assert.match(serviceWorker, /CacheFirst/, "PWA resource bytes must use a cache-first runtime strategy");
 assert.match(serviceWorker, /edgeever-app-shell/, "PWA navigation must use a dedicated app-shell runtime cache");
 assert.match(serviceWorker, /edgeever-optional-pdf/, "PWA must cache the optional PDF runtime after first use");
+assert.match(serviceWorker, /edgeever-optional-locales/, "PWA must cache the Japanese catalog after first use");
 assert.match(serviceWorker, /NetworkFirst/, "PWA navigation must prefer the current deployment over cached HTML");
 assert.match(serviceWorker, /PrecacheFallbackPlugin/, "PWA navigation must retain an offline app-shell fallback");
 assert.doesNotMatch(serviceWorker, /NavigationRoute/, "PWA navigation must not always serve the precached HTML shell");
@@ -25,6 +26,7 @@ assert.match(precacheManifest, /index\.html\?edgeever-offline-shell=/, "PWA must
 const optionalDiagramPattern = /(?:beautiful-mermaid|vendor-mermaid|mermaid\.core|vendor-x6|vendor-codemirror|[^"']*Diagram(?:EditorPane)?-)[^"']*\.js/;
 assert.doesNotMatch(precacheManifest, optionalDiagramPattern, "Optional diagram chunks must remain out of the initial PWA precache");
 assert.doesNotMatch(precacheManifest, /vendor~pdf-[^"']*\.js/, "Optional PDF.js runtime must remain out of the initial PWA precache");
+assert.doesNotMatch(precacheManifest, /i18n-ja-[^"']*\.js/, "Japanese catalog must remain out of the initial PWA precache");
 assert.doesNotMatch(precacheManifest, /noto-sans-sc-[^"']*\.woff2/, "Print-only Noto Sans SC shards must remain out of the PWA precache");
 
 const precacheURLs = [...precacheManifest.matchAll(/\{url:"([^"]+)"/g)].map((match) => match[1]);
