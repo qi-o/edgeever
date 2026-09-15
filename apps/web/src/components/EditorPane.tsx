@@ -303,10 +303,13 @@ type EditorPaneProps = {
   selectionActionBar?: ReactNode;
   onOpenMemo?: (memoId: string) => void;
   onOpenAiPrompts?: () => void;
+  companionAvailable?: boolean;
+  beforeCompanionApply?: () => Promise<void>;
+  onCompanionNotesChanged?: () => Promise<void>;
+  onOpenCompanionNote?: (id: string, notebookId: string) => void;
   pluginHost: EdgeEverPluginHost;
   pluginNavigationRequest?: { id: number; noteId: string; search: string } | null;
   onOpenExecutionCenter: () => void;
-  companionDiscoveryHub?: ReactNode;
 };
 
 type RichEditorPaneProps = EditorPaneProps & {
@@ -377,10 +380,13 @@ const RichEditorPane = ({
   selectionActionBar,
   onOpenMemo,
   onOpenAiPrompts,
+  companionAvailable = false,
+  beforeCompanionApply,
+  onCompanionNotesChanged,
+  onOpenCompanionNote,
   pluginHost,
   pluginNavigationRequest,
   onOpenExecutionCenter,
-  companionDiscoveryHub,
   onRequestMobileNativeEdit,
 }: RichEditorPaneProps) => {
   const { t, i18n } = useTranslation();
@@ -3416,7 +3422,6 @@ const RichEditorPane = ({
               </Button>
             )}
             <MemoEditorHeaderActions
-              companionDiscoveryHub={companionDiscoveryHub}
               moreButtonClassName={cn(!mobileEditingActive && !readOnly && "hidden sm:inline-flex")}
               moreMenuClassName="w-44 rounded-md"
               onOpenExecutionCenter={onOpenExecutionCenter}
@@ -4010,9 +4015,16 @@ const RichEditorPane = ({
         title={title}
         contentMarkdown={currentMarkdownForAi}
         selectionMarkdown={aiSelection?.contentMarkdown}
+        memoId={memo?.id}
+        notebookId={memo?.notebookId}
+        notebookTitle={notebookOptions.find((notebook) => notebook.id === memo?.notebookId)?.name}
+        companionAvailable={companionAvailable}
         onOpenChange={handleAiAssistantOpenChange}
         onApply={applyAiDraft}
         onOpenPromptLibrary={onOpenAiPrompts}
+        beforeCompanionApply={beforeCompanionApply}
+        onCompanionNotesChanged={onCompanionNotesChanged}
+        onOpenCompanionNote={onOpenCompanionNote}
       />
 
       <ShareMemoDialog memoId={memo.id} open={shareOpen} onOpenChange={setShareOpen} />

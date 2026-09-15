@@ -704,7 +704,6 @@ export const zhCN = {
       general: "常规设置",
       ai: "AI集成",
       data: "导入导出",
-      paw: "猫爪模式",
       advanced: "高级设置",
       account: "登录设置",
     },
@@ -719,7 +718,7 @@ export const zhCN = {
     install: "安装",
     installing: "安装中…",
     empty: "这个工作区还没有安装插件或主题。",
-    syncDescription: "安装清单会随这个工作区在 Web 和桌面端之间同步，每个浏览器或桌面应用会自行下载并校验插件包。Android 和 iOS 应用不运行插件。设置和密钥仍只保存在当前设备。",
+    syncDescription: "安装清单会随这个工作区在 Web 和桌面端之间同步。设置和密钥仍只保存在当前设备。",
     permissions: {
       publicNetwork: "读取任意公开网站内容",
     },
@@ -976,6 +975,13 @@ export const zhCN = {
   },
   aiAssistant: {
     title: "AI 笔记助手",
+    modes: {
+      instruction: "指令模式",
+      ask: "Agent 模式",
+      askHint: "可以检索和整理笔记。改库前会先列出，确认后才执行。",
+      askPlaceholder: "问问你的笔记，或让 Agent 整理…",
+      resumeLast: "继续上次",
+    },
     open: "打开 AI 写作助手",
     openForSelection: "用 AI 处理",
     actionLabel: "处理方式",

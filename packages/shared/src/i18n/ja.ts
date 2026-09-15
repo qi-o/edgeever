@@ -704,7 +704,6 @@ export const ja = {
       general: "一般",
       ai: "AI 連携",
       data: "インポートとエクスポート",
-      paw: "肉球モード",
       advanced: "詳細",
       account: "ログイン設定",
     },
@@ -719,7 +718,7 @@ export const ja = {
     install: "インストール",
     installing: "インストール中…",
     empty: "このワークスペースには、まだプラグインやテーマがありません。",
-    syncDescription: "インストール一覧はこのワークスペースに従い、Web とデスクトップで共有されます。各ブラウザまたはデスクトップアプリがパッケージを自分でダウンロードします。Android と iOS アプリはプラグインを実行しません。設定とシークレットはこの端末に残ります。",
+    syncDescription: "インストール一覧はこのワークスペースに従い、Web とデスクトップで共有されます。設定とシークレットはこの端末に残ります。",
     permissions: {
       publicNetwork: "任意の公開ウェブサイトの内容を読む",
     },
@@ -976,6 +975,13 @@ export const ja = {
   },
   aiAssistant: {
     title: "AI ノートアシスタント",
+    modes: {
+      instruction: "指示モード",
+      ask: "Agent モード",
+      askHint: "ノートの検索と整理ができます。書き込みは先に一覧表示され、確認後に実行されます。",
+      askPlaceholder: "ノートに尋ねる、または Agent に整理を依頼…",
+      resumeLast: "前回の続き",
+    },
     open: "AI 執筆アシスタントを開く",
     openForSelection: "AI に依頼",
     actionLabel: "操作",
