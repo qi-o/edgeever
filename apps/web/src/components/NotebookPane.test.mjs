@@ -106,6 +106,20 @@ describe("NotebookPane client downloads", () => {
     expect(source).not.toContain("!window.edgeeverDesktop?.isAvailable");
   });
 
+  test("labels Windows and Linux by package format instead of a preview badge", () => {
+    const downloads = source.split('pwa.sidebarDownloadsTitle')[1]?.split("</DropdownMenu>")[0];
+
+    expect(downloads).toContain(">AppImage</span>");
+    expect(downloads).toContain(">EXE</span>");
+    expect(downloads).toContain('t("pwa.sidebarLinuxAvailability")');
+    expect(downloads).toContain('t("pwa.sidebarWindowsAvailability")');
+    expect(downloads).toContain("<Tooltip>");
+    expect(downloads).not.toContain("sidebarLinuxBadge");
+    expect(downloads).not.toContain("sidebarWindowsBadge");
+    expect(downloads).not.toContain('|| "Preview"');
+    expect(downloads).not.toContain("bg-amber-50");
+  });
+
   test("renders platform icons inline so desktop protocols do not break them", () => {
     expect(source).toContain("<BrandIcon path={APPLE_ICON_PATH}");
     expect(source).toContain("<BrandIcon path={WINDOWS_ICON_PATH}");

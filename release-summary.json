@@ -1,23 +1,23 @@
 {
-  "version": "1.73.0",
+  "version": "1.73.2",
   "changes": {
     "en-US": [
-      "Capture a screenshot from the desktop tray or menu bar and save it as a new note. The macOS menu-bar icon now uses the cat brand mark.",
-      "Give desktop notes even Evernote-like reading gutters, including when a scrollbar is visible.",
-      "Tighten the notebook sidebar so sync status, create, templates, all notes, and the notebook list sit closer together.",
-      "Keep the web app installable without downloading the full interface up front; pages cache as you use them."
+      "Capture the current screen from the desktop tray or menu bar into a new note that already contains the screenshot, and remove the empty note if the image cannot be saved.",
+      "Make the macOS menu-bar cat a crisp template glyph that stays readable when tinted at 16px.",
+      "Label Windows and Linux downloads by package format instead of a Preview badge; unsigned and best-effort caveats stay in the tooltip.",
+      "Keep iOS math formulas, image galleries, and merge dividers aligned with the Web editor so notes round-trip the same Markdown, including currency dollar signs."
     ],
     "zh-CN": [
-      "桌面端可从托盘或菜单栏截图并保存为新笔记。macOS 菜单栏图标改为猫咪品牌图形。",
-      "桌面笔记左右留白更接近印象笔记，出现滚动条时两侧仍保持对称。",
-      "收紧笔记本侧栏间距，同步状态、新建、模板、全部笔记和笔记本列表更紧凑。",
-      "网页版安装为应用时不再预下载整套界面，改为使用各页面时再缓存。"
+      "从桌面托盘或菜单栏截取当前屏幕时，会把截图写入新笔记正文；若图片保存失败会删掉空白笔记，而不是留下空笔记。",
+      "macOS 菜单栏猫咪图标改为清晰的模板图形，系统着色后在 16px 下仍可辨认。",
+      "Windows 和 Linux 下载入口按安装包格式标注，不再显示「预览版」角标；未签名和尽力支持的说明保留在提示中。",
+      "iOS 的数学公式、图片画廊和分隔线与网页编辑器对齐，笔记 Markdown 往返一致，货币金额中的美元符号也不会被误当成公式。"
     ],
     "ja": [
-      "デスクトップのトレイまたはメニューバーからスクリーンショットを撮り、新しいノートとして保存できます。macOS のメニューバーアイコンは猫のブランドマークになりました。",
-      "デスクトップのノートに Evernote に近い左右余白を付け、スクロールバーが出ても左右が揃うようにしました。",
-      "ノートブックサイドバーの余白を詰め、同期状態・作成・テンプレート・すべてのノート・ノートブック一覧を近づけました。",
-      "インストール可能な Web アプリは導入時に全画面を先読みしなくなり、使うページからキャッシュします。"
+      "デスクトップのトレイまたはメニューバーから現在の画面を撮り、スクリーンショットが入った新しいノートを作成します。画像を保存できなかった場合は空のノートを残さず削除します。",
+      "macOS のメニューバーの猫アイコンを、16px でも判読できるはっきりしたテンプレート画像にしました。",
+      "Windows と Linux のダウンロード表示からプレビューバッジを外し、パッケージ形式で案内します。未署名やベストエフォートの注意はツールチップに残します。",
+      "iOS の数式、画像ギャラリー、区切り線を Web エディタと同じ文書構造に揃え、Markdown の往復を一致させ、通貨のドル記号も数式と誤認しません。"
     ]
   }
 }
