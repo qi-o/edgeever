@@ -1,23 +1,29 @@
 {
-  "version": "1.74.0",
+  "version": "1.75.1",
   "changes": {
     "en-US": [
-      "Add Agent mode to the in-app AI assistant so it can search, organize, and write notes; the standalone Paw page, discovery hub, and settings tab are gone, with those capabilities folded into the assistant. The open note is context rather than a search filter, note writes apply immediately, and the transcript stays on the newest reply.",
-      "Prevent a single tray or menu-bar screenshot from creating two notes.",
-      "Make the macOS menu-bar cat a heavier template glyph that matches neighboring status icons.",
-      "Shorten plugin marketplace copy so the header stays aligned with its actions."
+      "Give Agent mode a run timeline, @-pinned notes, resumable turns, and date-aware recent-note search. Fold thinking and tool details into one card after the answer, and keep note links working even when the memo_ prefix is missing.",
+      "Agent now applies merge, move, and tag writes immediately, edits the open diagram in place, manages note templates and AI instructions, and creates real mind-map, flowchart, and architecture notes instead of Markdown outlines.",
+      "Keep extra blank lines in Markdown mode across parse, autosave, and mode switches.",
+      "Close in-note search when switching notes so a leftover query does not appear on the next note.",
+      "Stop Cmd+N and a second click from creating two notes, and keep the new note from appearing twice while it syncs.",
+      "Stop a single desktop screenshot capture from importing the same image twice."
     ],
     "zh-CN": [
-      "内置 AI 助手新增 Agent 模式，可检索、整理并直接改笔记；独立的爪印页面、发现中心和设置页已下线，能力都收进助手。当前打开的笔记只作为上下文，不会限制搜索范围；笔记写入立即生效，对话会跟着最新回复滚动。",
-      "从托盘或菜单栏截屏时，同一次操作不会再生成两篇笔记。",
-      "macOS 菜单栏猫咪图标加粗描边，和其他状态图标一样清晰。",
-      "缩短插件市场说明文案，让标题行与操作按钮对齐。"
+      "Agent 模式新增执行时间线、用 @ 钉住笔记、中断后续跑，以及按日期搜索最近笔记。回答完成后把思考与工具收进一张折叠卡片，即使链接丢掉 memo_ 前缀也能打开对应笔记。",
+      "Agent 现在会立即执行合并、移动和打标签，可就当前打开的图就地编辑、管理笔记模板和 AI 指令，并创建真正的思维导图、流程图和架构图笔记，而不再写成 Markdown 大纲。",
+      "Markdown 模式会保留额外空行，解析、自动保存和模式切换时不再把连续空行挤掉。",
+      "切换笔记时关闭文内查找，避免上一条的搜索词残留到新笔记里。",
+      "避免 Cmd+N 和再次点击各建一篇笔记，同步时也不会在列表里同时留下临时 ID 和正式 ID。",
+      "桌面端一次截屏不会再导入两张相同图片。"
     ],
     "ja": [
-      "アプリ内 AI アシスタントに Agent モードを追加し、ノートの検索・整理・書き込みができるようにしました。独立した Paw ページ、発見ハブ、設定タブは廃止し、それらの機能はアシスタントに統合しています。開いているノートは検索範囲ではなく文脈として扱い、ノートの書き込みは即時反映され、会話は最新の返信に追従します。",
-      "トレイまたはメニューバーからのスクリーンショットが、1回の操作で2つのノートを作らないようにしました。",
-      "macOS メニューバーの猫アイコンを、他のステータスアイコンと同じ太さのテンプレート画像にしました。",
-      "プラグインマーケットの説明文を短くし、見出し行と操作ボタンが揃うようにしました。"
+      "Agent モードに実行タイムライン、@ によるノートのピン留め、中断したターンの再開、日付指定の最近ノート検索を追加しました。回答後は思考とツール詳細を1枚の折りたたみカードにまとめ、memo_ 接頭辞が欠けていてもノートリンクを開けるようにしました。",
+      "Agent はノートの結合・移動・タグ付けを即時に実行し、開いている図をその場で編集し、ノートテンプレートと AI 指示を管理し、Markdown のアウトラインではなく実際のマインドマップ・フローチャート・構成図ノートを作成するようになりました。",
+      "Markdown モードで余分な空行を保持し、解析、自動保存、モード切替でも連続する空行が潰れないようにしました。",
+      "ノートを切り替えたときにノート内検索を閉じ、前の検索語が次のノートに残らないようにしました。",
+      "Cmd+N と続けてクリックしてもノートが二重に作られず、同期中に同じ新規ノートがリストに二重表示されないようにしました。",
+      "デスクトップのスクリーンショット取り込みが、1回の撮影で同じ画像を二重に取り込まないようにしました。"
     ]
   }
 }

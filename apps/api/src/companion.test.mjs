@@ -8,6 +8,7 @@ import { createSelfHostedStorageAdapter } from "./self-hosted-storage-adapter.ts
 import { registerCompanionRoutes } from "./companion-routes.ts";
 import { beginCompanionTurn, checkpointCompanionTurn, clearCompanionHistory, companionRevision, forgetCompanionMemory,
   getCompanionTurn, importCompanionMemories, listCompanionMemories, listCompanionTurns, saveCompanionMemory } from "./companion-service.ts";
+import { parseCompanionMentionQuery } from "@edgeever/shared";
 import { COMPANION_INSTRUCTIONS, companionMessages, companionTurnInstructions, companionUserContent, selectCompanionMemories, streamCompanion } from "./companion-runtime.ts";
 import { applyCompanionAction, proposeCompanionAction, listCompanionActions, dismissCompanionAction } from "./companion-actions.ts";
 import { createMemoRecord, getMemoDetail, updateMemoRecord } from "./memo-service.ts";
@@ -74,9 +75,30 @@ describe("companion turn context", () => {
       message: "学习资料里面有哪些笔记?",
       focus: { memoId: "memo_1", notebookId: "nb_demo_features", notebookTitle: "功能演示" },
     }))).toContain("not a search filter");
+    expect(companionUserContent(input({
+      message: "帮我新建一个RAG原理的思维导图。",
+      focus: { memoId: "memo_1", notebookId: "nb_demo_features", notebookTitle: "功能演示" },
+    }))).toContain("use this open notebook");
+    expect(companionUserContent(input({
+      message: "根据这篇做思维导图",
+      focus: {
+        memoId: "memo_1", notebookId: "nb_demo_features", notebookTitle: "功能演示", title: "RAG 原理",
+        contentMarkdown: "检索、增强、生成是 RAG 的三步。",
+      },
+    }))).toContain("检索、增强、生成是 RAG 的三步。");
+    expect(companionUserContent(input({
+      message: "给这张图加一个评估节点",
+      focus: { memoId: "memo_1", notebookId: "nb_demo_features", title: "RAG 原理", diagramKind: "mind-map" },
+    }))).toContain("editable mind-map");
+    expect(companionUserContent(input({
+      message: "整理这些",
+      mentions: [{ type: "notebook", id: "nb_study", title: "学习资料" }],
+    }))).toContain("[notebook:nb_study]");
     expect(companionUserContent(input({ message: "What did I write?" }))).toBe("What did I write?");
     expect(companionTurnInstructions(input({ allowNotes: true, allowWrites: false }))).toContain("read-only");
     expect(companionTurnInstructions(input({ allowNotes: true }))).toBe("");
+    expect(parseCompanionMentionQuery("see @note", 9)).toEqual({ query: "note", start: 4, end: 9 });
+    expect(parseCompanionMentionQuery("hello", 5)).toBeNull();
   });
 });
 
@@ -342,41 +364,128 @@ describe("companion HTTP contracts", () => {
     const result = await (await request("turns", "POST", payload)).text();
     expect(result).not.toContain("outdated final");
     expect((await getCompanionTurn(db, scope, payload.id)).status).toBe("cancelled");
+    expect(parseEvents(result).some(event => event.type === "error")).toBe(true);
+  });
+  test("text before a tool is sealed as process, later text is the answer", async () => {
+    const { request } = fixture({ stream: async args => ({
+      totalUsage: Promise.resolve({}),
+      fullStream: (async function* () {
+        yield { type: "text-delta", text: "Let me read the note." };
+        args.run?.tools.push({ id: "tool-1", name: "get_memo", status: "done", effects: [] });
+        await args.run?.onProgress?.();
+        yield { type: "text-delta", text: "Created the map." };
+      })(),
+    }) });
+    const events = parseEvents(await (await request("turns", "POST", input({ allowNotes: true }))).text());
+    expect(events.some(event => event.type === "process" && event.text.includes("Let me read the note."))).toBe(true);
+    expect(events.at(-1).turn.process).toContain("Let me read the note.");
+    expect(events.at(-1).turn.response).toBe("Created the map.");
+  });
+  test("tool-only runs complete without assistant text and persist the timeline", async () => {
+    const { request, db } = fixture({ stream: async args => {
+      args.run?.tools.push({ id: "tool-1", name: "create_memo", status: "done", effects: [{ kind: "created", memoId: "memo_1", title: "New" }] });
+      await args.run?.onProgress?.();
+      return { totalUsage: Promise.resolve({ inputTokens: 4, outputTokens: 0 }), fullStream: (async function* () {})() };
+    } });
+    const payload = input({ allowNotes: true });
+    const events = parseEvents(await (await request("turns", "POST", payload)).text());
+    expect(events.some(event => event.type === "tools" && event.tools[0]?.name === "create_memo")).toBe(true);
+    expect(events.at(-1)).toMatchObject({ type: "done", turn: { status: "completed", tools: [{ name: "create_memo" }] } });
+    expect((await getCompanionTurn(db, scope, payload.id)).tools_json).toContain("create_memo");
+  });
+  test("asking the user pauses the turn until answers resume it", async () => {
+    let calls = 0;
+    const { request, db } = fixture({ stream: async args => {
+      calls++;
+      if (calls === 1) {
+        args.run?.questions.push({ id: "notebook", prompt: "Which notebook?", inputType: "single_select", options: [{ id: "a", label: "A" }, { id: "b", label: "B" }] });
+        args.run.pause.ask = true;
+        await args.run?.onProgress?.();
+      }
+      return { totalUsage: Promise.resolve({}), fullStream: (async function* () {
+        yield { type: "text-delta", text: calls === 1 ? "Need a notebook." : " Using A." };
+      })() };
+    } });
+    const payload = input({ allowNotes: true });
+    const events = parseEvents(await (await request("turns", "POST", payload)).text());
+    expect(events.at(-1).turn.status).toBe("interrupted");
+    expect(events.at(-1).turn.questions[0].id).toBe("notebook");
+    expect((await request(`turns/${payload.id}/resume`, "POST", {})).status).toBe(400);
+    const resumed = parseEvents(await (await request(`turns/${payload.id}/resume`, "POST", { answers: [{ questionId: "notebook", optionIds: ["a"] }] })).text());
+    expect(resumed.at(-1).turn.status).toBe("completed");
+    expect((await getCompanionTurn(db, scope, payload.id)).answers_json).toContain("notebook");
+  });
+  test("interrupted runs can resume on the same turn", async () => {
+    let calls = 0;
+    const { request, db } = fixture({ stream: async () => {
+      calls++;
+      return { totalUsage: Promise.resolve({}), fullStream: (async function* () {
+        if (calls === 1) {
+          yield { type: "text-delta", text: "working" };
+          throw new Error("timeout-like");
+        }
+        yield { type: "text-delta", text: " continued" };
+      })() };
+    } });
+    const payload = input({ allowNotes: true });
+    await (await request("turns", "POST", payload)).text();
+    expect((await getCompanionTurn(db, scope, payload.id)).status).toBe("failed");
+    await db.prepare("UPDATE companion_turns SET status = 'interrupted' WHERE id = ?").bind(payload.id).run();
+    const events = parseEvents(await (await request(`turns/${payload.id}/resume`, "POST", {})).text());
+    expect(calls).toBe(2);
+    expect(events.at(-1).turn.response).toContain("continued");
+    expect(events.at(-1).turn.status).toBe("completed");
   });
 });
 
 describe("actual AI SDK companion runtime", () => {
   test("proposal reasons contain evidence instead of card boilerplate", () => {
-    expect(COMPANION_INSTRUCTIONS).toContain("concrete evidence or content relationship");
-    expect(COMPANION_INSTRUCTIONS).toContain("Never use _reason to paraphrase the operation");
-    expect(COMPANION_INSTRUCTIONS).toContain("If there is no useful non-redundant reason, do not propose");
-    expect(COMPANION_INSTRUCTIONS).toContain("[Note title](#memo=NOTE_ID)");
+    expect(COMPANION_INSTRUCTIONS).toContain("All available write tools execute immediately");
+    expect(COMPANION_INSTRUCTIONS).not.toContain("user must confirm the suggestion card");
+    expect(COMPANION_INSTRUCTIONS).toContain("[Note title](#memo=memo_abc123)");
+    expect(COMPANION_INSTRUCTIONS).toContain("Do not drop memo_");
+    expect(COMPANION_INSTRUCTIONS).toContain("not as a heading");
     expect(COMPANION_INSTRUCTIONS).toContain("Do not paste note bodies");
     expect(COMPANION_INSTRUCTIONS).toContain("find_notebooks");
     expect(COMPANION_INSTRUCTIONS).toContain("Do not ask permission to search");
+    expect(COMPANION_INSTRUCTIONS).toContain("createdAfter");
+    expect(COMPANION_INSTRUCTIONS).toContain("Do not ask which notebook or tag first");
+    expect(COMPANION_INSTRUCTIONS).toContain("after you have already searched");
+    expect(COMPANION_INSTRUCTIONS).toContain("create_diagram_memo");
+    expect(COMPANION_INSTRUCTIONS).toContain("思维导图");
+    expect(COMPANION_INSTRUCTIONS).toContain("update_diagram");
+    expect(COMPANION_INSTRUCTIONS).toContain("这篇");
+    expect(COMPANION_INSTRUCTIONS).not.toContain("You cannot create or edit diagrams");
+    expect(COMPANION_INSTRUCTIONS).not.toContain("You cannot edit existing diagrams");
+    expect(COMPANION_INSTRUCTIONS).toContain("use_note_template");
+    expect(COMPANION_INSTRUCTIONS).toContain("todo_write");
+    expect(COMPANION_INSTRUCTIONS).toContain("ask_user_question");
+    expect(COMPANION_INSTRUCTIONS).toContain("Do not narrate");
+    expect(COMPANION_INSTRUCTIONS).toContain("AI instructions");
+    expect(COMPANION_INSTRUCTIONS).toContain("cannot empty the trash");
+    expect(COMPANION_INSTRUCTIONS).toContain("delete note templates");
   });
 
-  test("the real tool loop persists a proposal but exposes no execute-write tool", async () => {
+  test("the real tool loop applies tag writes immediately without a confirmation card", async () => {
     const { db, notes, row, complete, context } = await organizationFixture();
     const calls = [
       { toolName: "search_memos", input: JSON.stringify({ query: "Idea" }) },
       { toolName: "get_memo", input: JSON.stringify({ memoId: notes[0].id }) },
-      { toolName: "add_tags_to_memos", input: JSON.stringify({ memoIds: [notes[0].id], tags: ["idea"], _reason: "An actionable idea" }) },
+      { toolName: "add_tags_to_memos", input: JSON.stringify({ memoIds: [notes[0].id], tags: ["idea"] }) },
     ];
     const model = new MockLanguageModelV4({ doStream: async () => {
       const call = calls.shift();
       return { stream: simulateReadableStream({ chunks: call ? [
         { type: "tool-call", toolCallId: crypto.randomUUID(), ...call }, { ...finish, finishReason: { unified: "tool-calls" } },
-      ] : [{ type: "text-start", id: "1" }, { type: "text-delta", id: "1", delta: "Please review the card." }, { type: "text-end", id: "1" }, finish] }) };
+      ] : [{ type: "text-start", id: "1" }, { type: "text-delta", id: "1", delta: "Tagged." }, { type: "text-end", id: "1" }, finish] }) };
     } });
     const result = await streamCompanion({ db, context, scope, input: input({ id: row.id, threadId: row.thread_id, allowNotes: true }), model,
       memories: [], history: [], revision: 0, signal: new AbortController().signal, sources: [], assertActive: async () => {} });
-    expect(await result.text).toBe("Please review the card.");
-    expect(JSON.stringify(model.doStreamCalls.at(-1).prompt)).toContain("awaiting_user_confirmation");
-    expect(model.doStreamCalls[0].tools.map(t => t.name).sort()).toEqual(COMPANION_MCP_TOOLS.map(t => t.name).sort());
-    expect((await getMemoDetail(db, scope.workspaceId, notes[0].id)).tags).toEqual(["existing"]);
+    expect(await result.text).toBe("Tagged.");
+    expect(model.doStreamCalls[0].tools.map(t => t.name).sort()).toEqual([...COMPANION_MCP_TOOLS.map(t => t.name), "ask_user_question", "todo_write"].sort());
+    expect((await getMemoDetail(db, scope.workspaceId, notes[0].id)).tags).toEqual(["existing", "idea"]);
     await complete();
-    expect((await listCompanionActions(db, scope))[0]).toMatchObject({ status: "pending", plan: { kind: "tool", toolName: "add_tags_to_memos", arguments: { tags: ["idea"] } } });
+    expect(await listCompanionActions(db, scope)).toEqual([]);
   });
 
   test("truncated notes cannot be used for a write proposal", async () => {
@@ -425,7 +534,7 @@ describe("actual AI SDK companion runtime", () => {
       revision: 0, signal: new AbortController().signal, sources, assertActive: async () => {} });
     expect(await result.text).toBe("Found your note");
     expect(model.doStreamCalls).toHaveLength(4);
-    expect(model.doStreamCalls[0].tools.map(tool => tool.name).sort()).toEqual(COMPANION_MCP_TOOLS.map(t => t.name).sort());
+    expect(model.doStreamCalls[0].tools.map(tool => tool.name).sort()).toEqual([...COMPANION_MCP_TOOLS.map(t => t.name), "ask_user_question", "todo_write"].sort());
     expect(sources.map(source => source.id)).toEqual(["mine"]);
     const prompt = JSON.stringify(model.doStreamCalls.at(-1).prompt);
     expect(prompt).toContain("Memo not found");
