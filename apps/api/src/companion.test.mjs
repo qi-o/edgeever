@@ -34,7 +34,8 @@ function fixture(options = {}) {
     await next();
   });
   registerCompanionRoutes(app, { isDemoMode: () => options.demo ?? false,
-    loadModel: options.loadModel ?? (async () => ({ modelId: "test-model" })), stream: options.stream });
+    loadModel: options.loadModel ?? (async () => ({ modelId: "test-model" })),
+    loadCredentials: options.loadCredentials, stream: options.stream });
   const request = (path, method = "GET", body, headers = {}) => app.request(`/api/v1/companion/${path}`, {
     method, headers: { "Content-Type": "application/json", ...headers }, ...(body === undefined ? {} : { body: JSON.stringify(body) }),
   }, { storage });
@@ -352,7 +353,18 @@ describe("companion HTTP contracts", () => {
     const payload = input();
     const result = await (await request("turns", "POST", payload)).text();
     expect(result).not.toContain("provider-secret");
+    expect(parseEvents(result).some(event => event.type === "error" && event.code === "companion_generation_failed")).toBe(true);
     expect((await getCompanionTurn(db, scope, payload.id))).toMatchObject({ status: "failed", response: "partial response" });
+  });
+  test("maps provider HTTP 400 without leaking the response body", async () => {
+    const { request } = fixture({ stream: async () => ({ totalUsage: Promise.resolve({}), fullStream: (async function* () {
+      const error = new Error("Invalid schema sk-secret");
+      error.statusCode = 400;
+      throw error;
+    })() }) });
+    const result = await (await request("turns", "POST", input())).text();
+    expect(result).not.toContain("sk-secret");
+    expect(parseEvents(result).some(event => event.type === "error" && event.code === "ai_provider_request_rejected")).toBe(true);
   });
   test("concurrent memory change prevents final outdated output", async () => {
     const { request, db } = fixture({ stream: async () => ({ totalUsage: Promise.resolve({}), fullStream: (async function* () {
@@ -435,6 +447,81 @@ describe("companion HTTP contracts", () => {
     expect(calls).toBe(2);
     expect(events.at(-1).turn.response).toContain("continued");
     expect(events.at(-1).turn.status).toBe("completed");
+  });
+});
+
+describe("companion client-direct HTTP contracts", () => {
+  const credentials = {
+    provider: "openai-compatible",
+    baseUrl: "https://api.example/v1",
+    apiKey: "direct-key",
+    modelId: "direct-model",
+  };
+  const directFixture = () => fixture({
+    stream: async () => ({ totalUsage: Promise.resolve({}), fullStream: (async function* () {
+      yield { type: "text-delta", text: "proxied" };
+    })() }),
+    loadCredentials: async () => credentials,
+  });
+
+  test("prepare returns model credentials and does not invoke the proxy stream", async () => {
+    let streamed = 0;
+    const { request } = fixture({
+      stream: async () => {
+        streamed++;
+        return { totalUsage: Promise.resolve({}), fullStream: (async function* () {})() };
+      },
+      loadCredentials: async () => credentials,
+    });
+    const payload = input({ allowNotes: true });
+    const response = await request("turns/prepare", "POST", payload);
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(streamed).toBe(0);
+    expect(body.apiKey).toBe("direct-key");
+    expect(body.modelId).toBe("direct-model");
+    expect(body.provider).toBe("openai-compatible");
+    expect(body.instructions).toContain("untrusted DATA");
+    expect(body.messages.at(-1).content).toBe(payload.message);
+    expect(body.tools.some(tool => tool.name === "search_memos")).toBe(true);
+    expect(body.tools.some(tool => tool.name === "todo_write")).toBe(true);
+    expect(body.maxSteps).toBe(8);
+    expect((await request("turns/prepare", "POST", payload)).status).toBe(409);
+  });
+
+  test("tool execute, checkpoint and complete persist a client-driven turn", async () => {
+    const setup = fixture({ loadCredentials: async () => credentials });
+    setup.sqlite.exec("PRAGMA foreign_keys = ON");
+    setup.sqlite.query("INSERT INTO notebooks(id, name, workspace_id) VALUES ('nb_ideas', 'Ideas', ?)").run(scope.workspaceId);
+    await createMemoRecord(setup.db, scope.workspaceId, {
+      notebookId: "nb_ideas", title: "Idea A", contentMarkdown: "First unedited thought", tags: ["existing"],
+    }, { actorType: "user", actorId: scope.ownerId }, scope.ownerId);
+    const payload = input({ allowNotes: true });
+    expect((await setup.request("turns/prepare", "POST", payload)).status).toBe(200);
+    const listed = await setup.request(`turns/${payload.id}/tools`, "POST", {
+      name: "search_memos", input: { query: "Idea" }, response: "", process: "",
+    });
+    expect(listed.status).toBe(200);
+    const toolBody = await listed.json();
+    expect(toolBody.tools[0]).toMatchObject({ name: "search_memos", status: "done" });
+    expect((await setup.request(`turns/${payload.id}/checkpoint`, "POST", { response: "Working" })).status).toBe(200);
+    const completed = await setup.request(`turns/${payload.id}/complete`, "POST", {
+      response: "Found the notes.", status: "completed", inputTokens: 9, outputTokens: 4,
+    });
+    expect(completed.status).toBe(200);
+    expect((await completed.json()).turn).toMatchObject({
+      status: "completed", response: "Found the notes.", inputTokens: 9, outputTokens: 4,
+    });
+    expect((await getCompanionTurn(setup.db, scope, payload.id)).status).toBe("completed");
+  });
+
+  test("proxy streams an already prepared running turn", async () => {
+    const { request } = directFixture();
+    const payload = input();
+    expect((await request("turns/prepare", "POST", payload)).status).toBe(200);
+    const events = parseEvents(await (await request(`turns/${payload.id}/proxy`, "POST", {})).text());
+    expect(events.some(event => event.type === "text-delta" && event.text === "proxied")).toBe(true);
+    expect(events.at(-1)).toMatchObject({ type: "done", turn: { status: "completed" } });
   });
 });
 

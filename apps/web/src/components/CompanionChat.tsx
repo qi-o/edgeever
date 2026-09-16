@@ -64,6 +64,10 @@ export function CompanionChat({
   const explainError = (cause: unknown) => {
     const code = cause instanceof ApiRequestError ? cause.code : "";
     if (code === "ai_not_configured") return t("companion.configureModel");
+    if (code === "ai_credentials_rejected") return t("companion.credentialsRejected");
+    if (code === "ai_provider_payment_required") return t("companion.providerPaymentRequired");
+    if (code === "ai_provider_rate_limited") return t("companion.providerRateLimited");
+    if (code === "ai_provider_request_rejected") return t("companion.providerRequestRejected");
     if (code === "companion_memory_conflict") return t("companion.conflict");
     if (code === "companion_history_full") return t("companion.historyFull");
     if (code === "companion_action_conflict") return t("companion.actions.conflict");

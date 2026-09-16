@@ -59,6 +59,55 @@ export const CompanionTurnResumeSchema = z.object({
   answers: z.array(CompanionAnswerSchema).max(3).optional(),
 }).strict();
 export type CompanionTurnResume = z.infer<typeof CompanionTurnResumeSchema>;
+export const CompanionToolExecuteSchema = z.object({
+  name: z.string().trim().min(1).max(80),
+  input: z.record(z.string(), z.unknown()).default({}),
+  callId: z.string().trim().min(1).max(100).optional(),
+  response: z.string().max(16000).optional(),
+  process: z.string().max(32000).optional(),
+}).strict();
+export type CompanionToolExecuteInput = z.infer<typeof CompanionToolExecuteSchema>;
+export const CompanionTurnCheckpointSchema = z.object({
+  response: z.string().max(16000),
+  process: z.string().max(32000).optional(),
+}).strict();
+export type CompanionTurnCheckpointInput = z.infer<typeof CompanionTurnCheckpointSchema>;
+export const CompanionTurnCompleteSchema = z.object({
+  response: z.string().max(16000),
+  process: z.string().max(32000).optional(),
+  status: z.enum(["completed", "interrupted", "failed"]),
+  inputTokens: z.number().int().nonnegative().optional(),
+  outputTokens: z.number().int().nonnegative().optional(),
+}).strict();
+export type CompanionTurnCompleteInput = z.infer<typeof CompanionTurnCompleteSchema>;
+export type CompanionToolDefinition = {
+  name: string;
+  description: string;
+  inputSchema: Record<string, unknown>;
+};
+export type CompanionPreparedMessage = {
+  role: "user" | "assistant";
+  content: string;
+};
+export type CompanionPreparedTurn = {
+  turn: CompanionTurn;
+  provider: "openai-compatible" | "anthropic" | "google";
+  baseUrl: string;
+  apiKey: string;
+  modelId: string;
+  instructions: string;
+  messages: CompanionPreparedMessage[];
+  tools: CompanionToolDefinition[];
+  maxSteps: number;
+  maxOutputTokens: number;
+};
+export type CompanionToolExecuteResult = {
+  result: unknown;
+  tools: CompanionToolCall[];
+  todos: CompanionTodo[];
+  questions: CompanionQuestion[];
+  pause: boolean;
+};
 export type CompanionTodoStatus = "pending" | "in_progress" | "completed";
 export type CompanionTodo = { id: string; content: string; status: CompanionTodoStatus };
 export type CompanionToolEffectKind =
@@ -122,6 +171,25 @@ export const CompanionDiscoveryOutputSchema = z.object({
   }).nullable(),
 });
 export type CompanionDiscoveryOutput = z.infer<typeof CompanionDiscoveryOutputSchema>;
+export const CompanionDiscoveryCompleteSchema = z.object({
+  turnId: CompanionIdSchema,
+  output: z.unknown(),
+}).strict();
+export type CompanionDiscoveryCompleteInput = z.infer<typeof CompanionDiscoveryCompleteSchema>;
+export type CompanionPreparedDiscovery = {
+  quiet: true;
+  items: CompanionDiscoveryItem[];
+} | {
+  quiet: false;
+  turnId: string;
+  provider: "openai-compatible" | "anthropic" | "google";
+  baseUrl: string;
+  apiKey: string;
+  modelId: string;
+  instructions: string;
+  prompt: string;
+  maxOutputTokens: number;
+};
 export type CompanionDiscoveryItem = {
   id: string; kind: "insight" | "merge" | "append" | "move" | "tag"; title: string; body: string;
   sources: (CompanionSource & { notebookId: string })[];
