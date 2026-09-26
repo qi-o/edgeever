@@ -56,6 +56,7 @@ import {
   DEFAULT_IMAGE_WIDTH_PERCENT,
   NEW_IMAGE_WIDTH_PERCENT,
   IMAGE_WIDTH_PRESETS,
+  PHONE_IMAGE_FILL_CSS,
   clampImageWidth,
   parseImageWidth,
 } from "@edgeever/shared/image-display";
@@ -3358,5 +3359,6 @@ const getEditorStyles = (theme: "light" | "dark", options?: { viewer?: boolean }
   .edgeever-image-upload-spinner { width: 18px; height: 18px; border: 2px solid ${theme === "dark" ? "#475569" : "#cbd5e1"}; border-top-color: #0f766e; border-radius: 999px; animation: edgeever-image-upload-spin 0.8s linear infinite; }
   @keyframes edgeever-image-upload-spin { to { transform: rotate(360deg); } }
   .edgeever-editor-content hr { margin: 24px 0; border: 0; border-top: 1px solid #cbd5e1; }
+  ${PHONE_IMAGE_FILL_CSS}
 `;
 };
