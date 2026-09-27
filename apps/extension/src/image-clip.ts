@@ -197,6 +197,33 @@ const escapeMarkdownLabel = (value: string) =>
 const markdownDestination = (value: string) =>
   value.replace(/\\/g, "%5C").replace(/ /g, "%20").replace(/\(/g, "%28").replace(/\)/g, "%29");
 
+const GOOGLE_SEARCH_PARAMS = ["q", "udm", "tbm", "hl"] as const;
+
+// Google image results put the viewer state and tracking tokens in the tab URL.
+// Keeping those turns the note source into a wall of text instead of a link back to the search.
+export const readableClipSourceUrl = (pageUrl: string) => {
+  try {
+    const url = new URL(pageUrl);
+    const host = url.hostname.toLowerCase();
+    const googleSearch = /(^|\.)google\./.test(host) && url.pathname === "/search";
+    if (!googleSearch) return pageUrl;
+    const next = new URL(`${url.origin}${url.pathname}`);
+    for (const key of GOOGLE_SEARCH_PARAMS) {
+      const value = url.searchParams.get(key);
+      if (value) next.searchParams.set(key, value);
+    }
+    return next.toString();
+  } catch {
+    return pageUrl;
+  }
+};
+
+export const imageFromDataUrl = (value: string): StoredImage | StoredImageFailure | null => {
+  const match = /^data:(image\/[a-z0-9.+-]+);base64,([a-z0-9+/=\s]+)$/i.exec(value.trim());
+  if (!match?.[1] || !match[2]) return null;
+  return imageFromBase64(match[2].replace(/\s+/g, ""), match[1]);
+};
+
 export const imageSourceMarkdown = (input: {
   pageUrl: string;
   capturedAt: string;
@@ -247,6 +274,15 @@ export type ImageNoteClient = {
     },
   ) => Promise<unknown>;
   deleteMemo: (memoId: string) => Promise<unknown>;
+  createWithImage: (body: {
+    notebookId: string;
+    title: string;
+    contentMarkdown: string;
+    tags: string[];
+    filename: string;
+    mimeType: string;
+    bytes: Uint8Array;
+  }) => Promise<{ memoId: string; resourceId: string }>;
 };
 
 export const saveCapturedImageNote = async (
@@ -272,35 +308,18 @@ export const saveCapturedImageNote = async (
   }
   if (!notebookId) throw new Error("no-notebook");
 
-  const sourceMarkdown = imageSourceMarkdown(input);
-  let memoId = "";
-  try {
-    const created = await client.createMemo({
-      notebookId,
-      title: input.title,
-      contentMarkdown: sourceMarkdown,
-      tags: ["web-clip"],
-    });
-    memoId = created.memo.id;
-    if (!memoId) throw new Error("create-missing-id");
-
-    const resource = await client.uploadImage(memoId, {
-      bytes: input.bytes,
-      mimeType: input.mimeType,
-      filename: input.filename,
-    });
-    if (!resource.id) throw new Error("upload-missing-id");
-
-    const session = await client.createEditSession(memoId);
-    await client.saveMemo(memoId, {
-      editSessionId: session.editSession.id,
-      expectedRevision: session.editSession.baseRevision,
-      expectedContentHash: session.editSession.baseContentHash,
-      contentMarkdown: imageMemoMarkdown({ ...input, resourceId: resource.id }),
-    });
-    return { memoId, resourceId: resource.id };
-  } catch (error) {
-    if (memoId) await client.deleteMemo(memoId).catch(() => undefined);
-    throw error;
-  }
+  const contentMarkdown = imageMemoMarkdown({
+    ...input,
+    pageUrl: readableClipSourceUrl(input.pageUrl),
+    resourceId: "EDGEVERRESOURCEID",
+  });
+  return client.createWithImage({
+    notebookId,
+    title: input.title,
+    contentMarkdown,
+    tags: ["web-clip"],
+    filename: input.filename,
+    mimeType: input.mimeType,
+    bytes: input.bytes,
+  });
 };

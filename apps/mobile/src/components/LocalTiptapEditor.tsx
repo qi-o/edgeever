@@ -53,7 +53,6 @@ import {
 } from "@edgeever/shared";
 import { createEdgeEverMathematics } from "@edgeever/shared/mathematics";
 import {
-  DEFAULT_IMAGE_WIDTH_PERCENT,
   NEW_IMAGE_WIDTH_PERCENT,
   IMAGE_WIDTH_PRESETS,
   PHONE_IMAGE_FILL_CSS,
@@ -2182,7 +2181,7 @@ const applyImageWidth = (
   element: HTMLElement,
   attributes: Record<string, unknown>
 ): number => {
-  const width = parseImageWidth(attributes.width) ?? DEFAULT_IMAGE_WIDTH_PERCENT;
+  const width = parseImageWidth(attributes.width) ?? NEW_IMAGE_WIDTH_PERCENT;
   element.style.width = `${width}%`;
   element.dataset.width = String(width);
   return width;

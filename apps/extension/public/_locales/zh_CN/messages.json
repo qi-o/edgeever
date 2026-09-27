@@ -12,7 +12,7 @@
     "message": "网页剪藏"
   },
   "popupDescription": {
-    "message": "剪藏当前网页或选中内容。在图片上右键可以保存图片；在 X 上右键可以保存这条推文。"
+    "message": "剪藏当前网页或选中内容。选中文字后右键可以保存这段文字；在图片上右键可以保存图片；在 X 上右键可以保存这条推文。"
   },
   "saveCurrentPage": {
     "message": "剪藏当前网页"
@@ -196,6 +196,24 @@
   "emptyPageContent": {
     "message": "（网页没有可提取的正文内容）"
   },
+  "saveSelectionToEdgeEver": {
+    "message": "保存选中文字到 EdgeEver"
+  },
+  "selectionSaveHint": {
+    "message": "选中网页上的一段文字后右键，选择“保存选中文字到 EdgeEver”。这段文字会存成一条新笔记，放进上面选择的默认笔记本。"
+  },
+  "savingSelection": {
+    "message": "正在保存选中文字……"
+  },
+  "selectionSaved": {
+    "message": "已把选中文字存成一条笔记。"
+  },
+  "selectionEmpty": {
+    "message": "没有选中文字，没有保存。"
+  },
+  "selectionNoteFallbackTitle": {
+    "message": "选中文字"
+  },
   "saveImageToEdgeEver": {
     "message": "保存图片到 EdgeEver"
   },
@@ -259,7 +277,7 @@
     "message": "保存这条推文到 EdgeEver"
   },
   "tweetSaveHint": {
-    "message": "在 X 上右键一条推文，选择“保存这条推文到 EdgeEver”。已经显示的文字和图片会放进同一条新笔记，笔记本与上面的默认笔记本相同。"
+    "message": "在 X 上右键一条推文，选择“保存这条推文到 EdgeEver”。正文会完整保存，包括被「显示更多」折叠的部分；已经显示的图片也会放进同一条新笔记，笔记本与上面的默认笔记本相同。"
   },
   "savingTweet": {
     "message": "正在保存这条推文……"

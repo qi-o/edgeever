@@ -84,6 +84,16 @@ export const cleanTweetText = (value: string) => {
   return lines.join("\n").trim();
 };
 
+// Quote cards on X put the name and @handle in plain text, not in links.
+// Keep the body of this function identical to visibleTweetAuthor in capture-tweet.ts.
+export const visibleTweetAuthor = (value: string) => {
+  const parts = value.replace(/\r/g, "").split("\n").map((part) => part.trim()).filter(Boolean);
+  const handlePart = parts.find((part) => /^@[A-Za-z0-9_]{1,15}$/.test(part));
+  const handle = handlePart ? handlePart.slice(1) : "";
+  const displayName = parts.find((part) => part !== handlePart && part !== "·" && part !== "•") ?? "";
+  return { displayName, handle };
+};
+
 export const tweetAuthorLine = (displayName: string, handle: string) => {
   const name = displayName.replace(/\s+/g, " ").trim();
   const user = handle.replace(/^@/, "").replace(/\s+/g, "").trim();

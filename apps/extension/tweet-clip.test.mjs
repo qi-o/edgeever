@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, test } from "bun:test";
 import {
   canonicalStatusUrl,
@@ -8,6 +9,7 @@ import {
   tweetAuthorLine,
   tweetNoteMarkdown,
   tweetNoteTitle,
+  visibleTweetAuthor,
 } from "./src/tweet-clip.ts";
 
 const labels = {
@@ -56,6 +58,18 @@ describe("tweet note content", () => {
     expect(markdown).toContain("(https://x.com/huoshan007/status/123)");
     expect(markdown).toContain("时间: 2026-09-26T01:00:00.000Z");
     expect(markdown).not.toContain("pbs.twimg.com");
+  });
+
+  test("reads a quote author from the visible name block when it has no links", () => {
+    expect(visibleTweetAuthor("yetone\n@yetone\n·\n9月25日")).toEqual({ displayName: "yetone", handle: "yetone" });
+    expect(visibleTweetAuthor("Geek\n@geekbb\n·\n2小时")).toEqual({ displayName: "Geek", handle: "geekbb" });
+    expect(visibleTweetAuthor("")).toEqual({ displayName: "", handle: "" });
+    const page = readFileSync(new URL("./src/capture-tweet.ts", import.meta.url), "utf8");
+    const library = readFileSync(new URL("./src/tweet-clip.ts", import.meta.url), "utf8");
+    const parser = library.match(/const visibleTweetAuthor = \(value: string\) => \{[\s\S]*?\n\};/);
+    const compact = (source) => source.replace(/^[ \t]+/gm, "");
+    expect(parser?.[0]).toBeTruthy();
+    expect(compact(page)).toContain(compact(parser[0]));
   });
 
   test("accepts post photos and skips avatars, emoji, and video posters", () => {

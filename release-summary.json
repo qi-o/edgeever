@@ -1,26 +1,26 @@
 {
-  "version": "1.88.0",
+  "version": "1.89.0",
   "changes": {
     "en-US": [
-      "The Web Clipper can save a right-clicked image, or a right-clicked X post, as a new note.",
-      "Web and desktop use a quieter workspace. Secondary green on settings, dialogs, menus, and controls becomes ink. Brand green stays on the new-note button, solid actions, brief success, and unread dots. The light note surface sits one step above the list, heavy fills are lighter, and the template page no longer shows its two explanatory lines.",
-      "Markdown and rich text reading gutters line up. Diagram and infographic titles stay on one row with their metadata. Menus and secondary pages finish the 14px and 12px type scale. Note-type icons and card metadata are tighter, memo cards follow the theme on hover, the more-types control and Beta marks use the workspace gray, and the rich text view switch uses a document icon.",
-      "On a phone-width layout, images fill the note column. A width saved on desktop, such as 35%, stays stored in the note.",
-      "On Android, in-note search keeps the field, match count, and previous, next, and close controls on one bar."
+      "The Web Clipper can save a right-clicked text selection as a new note, with the source link. Right-click actions stay on the top-level menu. A folded X post is expanded before the full text is saved. A clipped image is stored with the first version of the note, and a Google image-search source keeps only the query.",
+      "On Windows, right-click a file and choose Send to EdgeEver. On Windows 11 that item is under Show more options. Each selected file becomes its own note, and the original file stays in place. On macOS, sharing any file from Finder also saves it as a note: Markdown becomes the body, images become image notes, and other files are attached. WeChat merged-forward chats still import the same way. An access token that can write notes can also attach files to a note.",
+      "Consecutive pictures form one gallery. Images uploaded next to each other join that gallery, and consecutive Markdown images, such as a post with several photos, open as one gallery. A single image stays on its own. A Markdown image without a stored width uses the same 35% size as a small picture.",
+      "Settings preferences now live on their own tabs. Captions are shorter, shortcuts sit two per row, and the add-model dialog no longer repeats its title. The token page is named API Token, and ZIP export uses the same outline button as the other actions. A new OpenAI-compatible service suggests gpt-5.6-luna. The AI tag-prompt setting and the Product Hunt link are removed.",
+      "The public demo opens with the editor outline expanded, and adds sample infographic and structured-table notes. Emoji icons are removed from the sample titles."
     ],
     "zh-CN": [
-      "网页剪藏可以在图片或 X 帖子上右键，把它存成一篇新笔记。",
-      "Web 和桌面端的工作区更安静。设置、对话框、菜单和控件上的装饰绿色改为墨色。品牌绿保留在新建笔记、实心操作、短暂成功提示和未读圆点上。浅色笔记表面比列表浅一档，过重的填充变轻，模板页不再显示两行说明文字。",
-      "Markdown 和富文本的阅读边距对齐。图表和信息图的标题与元信息保持在同一行。菜单和次级页面补齐 14px 与 12px 字号。笔记类型图标和卡片元信息更紧凑，笔记卡片的悬停跟随主题，更多类型和 Beta 标记改用工作区灰色，富文本视图切换改为文档图标。",
-      "手机宽度下，图片会铺满笔记栏。在桌面端保存的宽度（例如 35%）仍保留在笔记里。",
-      "Android 笔记内搜索把输入框、匹配数量，以及上一个、下一个和关闭，放在同一条栏上。"
+      "网页剪藏可以右键一段选中的文字，把它存成一篇新笔记，并带上来源链接。右键动作保持在菜单顶层。折叠的 X 帖子会先展开再保存全文。剪藏的图片和笔记一起写入第一版，Google 图片搜索的来源只保留查询词。",
+      "Windows 可以在文件上右键，选择「发送到 EdgeEver」。在 Windows 11 里，这一项位于「显示更多选项」。每个选中的文件会成为一篇笔记，原文件留在原地。macOS 从访达分享任意文件也会存成笔记：Markdown 成为正文，图片成为图片笔记，其他文件作为附件。微信合并转发的聊天记录仍按原来的方式导入。拥有写笔记权限的访问令牌也可以给笔记添加附件。",
+      "连续的图片会组成一个图库。挨着上传的图片会并进同一个图库；Markdown 里连续的图片，例如一条带多张照片的帖子，打开时也是一个图库。单张图片仍单独显示。没有记录宽度的 Markdown 图片，使用和小图相同的 35% 宽度。",
+      "设置里的偏好拆成了独立分页。说明文字更短，快捷键改成两列，添加模型时不再重复标题。访问令牌页改名为 API Token，导出 ZIP 的按钮与其他描边按钮一致。新建 OpenAI 兼容服务时，建议的模型是 gpt-5.6-luna。AI 标签提示词设置和 Product Hunt 链接已移除。",
+      "公开 Demo 会默认展开编辑器大纲，并加入信息图和多维表格的示例笔记。示例标题里的 emoji 已去掉。"
     ],
     "ja": [
-      "Web Clipper は、右クリックした画像または X の投稿を新しいノートとして保存できます。",
-      "Web とデスクトップのワークスペースがより静かになりました。設定、ダイアログ、メニュー、コントロールの装飾的な緑はインク色になります。ブランドの緑は新規ノート、塗りつぶし操作、短い成功表示、未読ドットに残ります。明るいノート面はリストより一段明るく、重い塗りは軽くなり、テンプレートページの説明文 2 行は表示されなくなります。",
-      "Markdown とリッチテキストの読み取り余白が揃います。図とインフォグラフィックのタイトルはメタ情報と同じ行に残ります。メニューと二次ページは 14px と 12px の文字サイズに揃います。ノート種別のアイコンとカードのメタ情報はよりコンパクトになり、ノートカードのホバーはテーマに従い、「その他の種類」と Beta 表示はワークスペースのグレーを使い、リッチテキスト表示の切り替えは文書アイコンになります。",
-      "スマホ幅の画面では、画像がノートの列いっぱいに表示されます。デスクトップで保存した幅（たとえば 35%）はノート内に残ります。",
-      "Android では、ノート内検索の入力欄、一致数、前へ、次へ、閉じるが 1 本のバーに並びます。"
+      "Web Clipper は、右クリックした選択テキストを出典リンク付きの新しいノートとして保存できます。右クリックの操作はメニューの最上位に残ります。折りたたまれた X の投稿は、全文を保存する前に展開されます。切り抜いた画像はノートの最初の版と一緒に保存され、Google 画像検索の出典は検索語だけを残します。",
+      "Windows では、ファイルを右クリックして「EdgeEver に送る」を選べます。Windows 11 では「その他のオプションを表示」の中にあります。選んだファイルごとにノートが作られ、元のファイルはそのまま残ります。macOS では、Finder から共有した任意のファイルもノートになります。Markdown は本文、画像は画像ノート、その他のファイルは添付です。WeChat の結合転送チャットはこれまでどおり取り込まれます。ノートの書き込み権限があるアクセストークンでも、ノートにファイルを添付できます。",
+      "連続した画像は一つのギャラリーになります。隣り合ってアップロードした画像はそのギャラリーに入り、複数枚の写真が並ぶ Markdown も開くと一つのギャラリーになります。一枚だけの画像はそのままです。幅が記録されていない Markdown 画像は、小さい画像と同じ 35% 幅になります。",
+      "設定の環境設定は専用のタブに分かれました。説明は短くなり、ショートカットは 2 列になり、モデル追加ではタイトルを繰り返さなくなりました。トークンのページ名は API Token で、ZIP 書き出しは他の操作と同じ枠線ボタンです。新しく追加する OpenAI 互換サービスでは、提案されるモデルが gpt-5.6-luna になります。AI タグ用プロンプトの設定と Product Hunt へのリンクはなくなりました。",
+      "公開デモでは、エディターのアウトラインが最初から展開され、インフォグラフィックと構造化テーブルのサンプルノートが加わりました。サンプルのタイトルから絵文字を外しました。"
     ]
   }
 }

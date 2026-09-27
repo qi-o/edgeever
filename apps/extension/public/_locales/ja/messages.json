@@ -12,7 +12,7 @@
     "message": "Web Clipper"
   },
   "popupDescription": {
-    "message": "表示中のページや選択した内容を取り込みます。画像の右クリックで画像を、X 上の投稿の右クリックでその投稿を保存できます。"
+    "message": "表示中のページや選択した内容を取り込みます。選択した文字の右クリックでその文章を、画像の右クリックで画像を、X 上の投稿の右クリックでその投稿を保存できます。"
   },
   "saveCurrentPage": {
     "message": "このページを取り込む"
@@ -196,6 +196,24 @@
   "emptyPageContent": {
     "message": "（このページから読み取れる本文はありませんでした）"
   },
+  "saveSelectionToEdgeEver": {
+    "message": "選択した文字を EdgeEver に保存"
+  },
+  "selectionSaveHint": {
+    "message": "ページ上の文字を選択して右クリックし、「選択した文字を EdgeEver に保存」を選びます。その文章は、上で選んだ既定のノートブックに 1 件のノートとして保存されます。"
+  },
+  "savingSelection": {
+    "message": "選択した文字を保存しています…"
+  },
+  "selectionSaved": {
+    "message": "選択した文字をノートとして保存しました。"
+  },
+  "selectionEmpty": {
+    "message": "選択された文字がないため、保存しませんでした。"
+  },
+  "selectionNoteFallbackTitle": {
+    "message": "選択した文字"
+  },
   "saveImageToEdgeEver": {
     "message": "画像を EdgeEver に保存"
   },
@@ -259,7 +277,7 @@
     "message": "この投稿を EdgeEver に保存"
   },
   "tweetSaveHint": {
-    "message": "X で投稿を右クリックし、「この投稿を EdgeEver に保存」を選びます。表示中の本文と画像は、上で選んだ既定のノートブックに 1 件のノートとして保存されます。"
+    "message": "X で投稿を右クリックし、「この投稿を EdgeEver に保存」を選びます。本文は「さらに表示」で折りたたまれた部分も含めて保存され、表示中の画像とともに、上で選んだ既定のノートブックへ 1 件のノートになります。"
   },
   "savingTweet": {
     "message": "この投稿を保存しています…"

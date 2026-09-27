@@ -3,12 +3,14 @@ import {
   filenameForImage,
   imageAltText,
   imageFromBytes,
+  imageFromDataUrl,
   imageHostName,
   imageMemoMarkdown,
   imageOriginPattern,
   MAX_IMAGE_BYTES,
   noteTitleForImage,
   preferredImageUrls,
+  readableClipSourceUrl,
   saveCapturedImageNote,
   sniffImageMimeType,
 } from "./src/image-clip.ts";
@@ -105,6 +107,21 @@ describe("image bytes", () => {
   });
 });
 
+describe("image clip sources", () => {
+  test("keeps a Google image search readable and leaves other pages unchanged", () => {
+    expect(readableClipSourceUrl(
+      "https://www.google.com/search?newwindow=1&q=%E7%8C%AB&udm=2&fbs=ABfTracking&biw=1920#sv=viewer",
+    )).toBe("https://www.google.com/search?q=%E7%8C%AB&udm=2");
+    expect(readableClipSourceUrl("https://example.com/cats#photo")).toBe("https://example.com/cats#photo");
+  });
+
+  test("reads a right-clicked data URL image", () => {
+    const image = imageFromDataUrl("data:image/png;base64,iVBORw0KGgo=");
+    expect(image?.mimeType).toBe("image/png");
+    expect(imageFromDataUrl("https://example.com/cat.jpg")).toBeNull();
+  });
+});
+
 describe("saveCapturedImageNote", () => {
   const image = {
     notebookId: "nb_inbox",
@@ -149,23 +166,25 @@ describe("saveCapturedImageNote", () => {
           order.push("delete");
           calls.deleted.push(memoId);
         },
+        createWithImage: async (body) => {
+          order.push("create-with-image");
+          calls.created = body;
+          return { memoId: "memo_1", resourceId: "res_1" };
+        },
         ...overrides,
       },
     };
   };
 
-  test("creates a note, uploads the image, then saves it into the note", async () => {
+  test("creates the note with the image already in the first version", async () => {
     const fixture = client();
     const saved = await saveCapturedImageNote(fixture.api, image);
     expect(saved).toEqual({ memoId: "memo_1", resourceId: "res_1" });
-    expect(fixture.order).toEqual(["create", "upload", "session", "save"]);
+    expect(fixture.order).toEqual(["create-with-image"]);
     expect(fixture.calls.created.notebookId).toBe("nb_inbox");
     expect(fixture.calls.created.tags).toEqual(["web-clip"]);
-    expect(fixture.calls.created.contentMarkdown.startsWith("![")).toBe(false);
-    expect(fixture.calls.saved.editSessionId).toBe("edit_1");
-    expect(fixture.calls.saved.expectedRevision).toBe(0);
-    expect(fixture.calls.saved.expectedContentHash).toBe("a".repeat(64));
-    expect(fixture.calls.saved.contentMarkdown).toContain("](/api/v1/resources/res_1/blob)");
+    expect(fixture.calls.created.contentMarkdown).toContain("](/api/v1/resources/EDGEVERRESOURCEID/blob)");
+    expect(fixture.calls.created.bytes).toEqual(image.bytes);
     expect(fixture.calls.deleted).toEqual([]);
   });
 
@@ -176,15 +195,14 @@ describe("saveCapturedImageNote", () => {
     expect(fixture.calls.created.notebookId).toBe("nb_first");
   });
 
-  test("deletes the new note when the image upload fails", async () => {
+  test("does not leave a source-only note when storing the image fails", async () => {
     const fixture = client({
-      uploadImage: async () => {
+      createWithImage: async () => {
         throw new Error("Missing required scope: write:resources");
       },
     });
     await expect(saveCapturedImageNote(fixture.api, image)).rejects.toThrow("write:resources");
-    expect(fixture.calls.deleted).toEqual(["memo_1"]);
-    expect(fixture.order).toEqual(["create", "delete"]);
+    expect(fixture.calls.deleted).toEqual([]);
   });
 
   test("does not delete anything when no notebook exists", async () => {
