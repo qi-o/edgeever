@@ -1,7 +1,7 @@
 import { useState, type FormEvent, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { AiProvider } from "@edgeever/shared";
-import { ChevronDown, Loader2, Plus, Server, ShieldCheck, Sparkles, TriangleAlert } from "lucide-react";
+import { ChevronDown, Loader2, Plus, Server, Sparkles, TriangleAlert } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { AiProviderCard } from "@/components/settings/AiProviderCard";
 import {
@@ -211,13 +211,6 @@ export const AiModelCard = () => {
                     <p className="rounded-lg border border-dashed border-slate-200 p-6 text-center text-xs text-slate-400">{t("aiModel.noProviders")}</p>
                   )}
                 </section>
-
-                <div className="flex items-start gap-2 border-t border-slate-200/60 pt-3 ">
-                  <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-slate-900" />
-                  <p className="text-xs leading-relaxed text-slate-500 ">
-                    {t("aiModel.privacyNotice")}
-                  </p>
-                </div>
 
                 <Dialog open={showAdd} onOpenChange={handleAddDialogChange}>
                   <DialogContent className="max-h-[calc(100vh-2rem)] overflow-y-auto sm:max-w-2xl">

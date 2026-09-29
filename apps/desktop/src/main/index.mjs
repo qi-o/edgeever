@@ -48,6 +48,7 @@ import {
 import electronUpdater from "electron-updater";
 import { createPluginPublicNetworkRuntime } from "./plugin-public-network.mjs";
 import { createAiDirectRuntime } from "./ai-direct.mjs";
+import { registerAcpIpc } from "./acp-host.mjs";
 import { shouldQuitAfterAllWindowsClosed } from "./window-lifecycle.mjs";
 import {
   RENDERER_HIBERNATE_PREPARE_TIMEOUT_MS,
@@ -1593,6 +1594,7 @@ const startApplication = async () => {
   ipcMain.on("desktop:ai-direct-cancel", (event, requestId) => {
     if (event.sender === mainWindow?.webContents && typeof requestId === "string") aiDirect.cancel(requestId);
   });
+  registerAcpIpc(ipcMain);
   ipcMain.handle("desktop:sync-scheduled-tasks", async (event, tasks) => {
     if (event.sender !== mainWindow?.webContents) throw new Error("Scheduled tasks must come from the main window");
     if (!Array.isArray(tasks) || tasks.length > 1_000) throw new Error("Invalid scheduled task list");

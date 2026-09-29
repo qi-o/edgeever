@@ -1,29 +1,41 @@
 {
-  "version": "1.90.0",
+  "version": "1.92.0",
   "changes": {
     "en-US": [
-      "Mind maps and flowcharts default to the Plain theme, with medium-gray emphasis. Diagrams without a saved theme use that look, and every diagram canvas uses the note editor surface.",
-      "The infographic editor opens without getting stuck, and updating its registry no longer breaks rendering.",
-      "The note header shows a GitHub link in place of the search button.",
-      "Copying a note as rich text shows a near-black success toast. The menu is now labeled Copy as Rich Text.",
-      "The mobile system info screen is more compact, and its text stays readable.",
-      "The settings tab for tokens is labeled API / MCP."
+      "On web and desktop, the AI assistant is a sidebar beside the note. It can attach files and asks before changing the note. The header switches recent chats. Desktop can connect Codex or Antigravity without handing over the note directory. In the browser that option stays unavailable, and requests still use the configured model. Settings use a Models and agents tab, with the agent source ahead of the model. The send button is near-black.",
+      "Select text in rich text or Markdown to explain it, translate it, or ask about that passage. Explain and translate pin the original text and reply in the current chat. A translation replaces the selection only while that range still matches.",
+      "Font size, line height, palette, and custom CSS follow the account into the editor, public shares, and rich-text paste. A palette colors links, code, bold text, and checked task boxes; body text keeps its usual color. A saved green or custom palette appears as the default look. Each palette shows a color chip, and the paragraph style button uses a heading icon. Column width stays on this device.",
+      "Note CSS includes paired light and dark presets. Settings can preview both on one sample and warn before a declaration would be dropped on save.",
+      "System information now lives in personal settings.",
+      "A note with a public share shows a pale gray share button in the header, so an active link is easier to see.",
+      "Phone editors can undo and redo. Opening a note clears that history, so the first undo does not wipe the document. The English Android interface now includes password help, tag explanations, settings descriptions, and the untitled-note label.",
+      "Saving a Google Search image with the browser extension records that search and its keyword.",
+      "The star count on the site now rounds the same way GitHub does.",
+      "After a public demo reset, an already open browser switches to the new sample data."
     ],
     "zh-CN": [
-      "思维导图和流程图默认使用素简主题，强调色改为中灰。未保存主题的图也按素简显示，所有图的画布都使用笔记编辑器的底色。",
-      "信息图编辑器可以正常打开，更新注册表也不会再导致渲染失败。",
-      "笔记顶栏用 GitHub 链接替换了搜索按钮。",
-      "把笔记复制到公众号或博客后，会看到近黑的成功提示。菜单名称改为「复制到公众号 / 博客」。",
-      "手机上的系统信息页更紧凑，文字保持可读。",
-      "设置里的令牌页签改名为 API / MCP。"
+      "Web 和桌面端的 AI 助手改为笔记右侧的侧栏。可以附加文件，修改笔记前会先确认。顶栏可以切换最近的对话。桌面端可以连接 Codex 或 Antigravity，且不会把笔记目录交给本机代理。浏览器里这项不可用，请求仍走已配置的模型。设置页签改为「模型与代理」，先选代理来源，再配置模型。发送按钮改为近黑色。",
+      "在富文本或 Markdown 里选中文字后，可以解释、翻译，或就这段内容提问。解释和翻译会钉住原文，并在当前对话里回复。只有原文范围没变时，翻译才会替换选区。",
+      "字号、行高、配色和自定义 CSS 会跟着账户，同步到编辑器、公开分享，以及复制到公众号或博客。配色只给链接、代码、加粗和已勾选的任务框上色，正文保持原来的颜色。已经保存的绿色或自定义配色会按默认外观显示。每种配色旁边会显示色块，段落样式按钮改为标题图标。栏宽仍只保存在这台设备上。",
+      "笔记 CSS 自带成对的浅色和深色预设。设置里可以在同一张预览里切换浅色和深色，保存时会被丢掉的声明会事先提示。",
+      "系统信息挪到个人设置里。",
+      "已经公开分享的笔记，顶栏分享按钮会变成浅灰色，方便看出正在分享。",
+      "手机编辑器可以撤销和重做。打开一篇笔记时会清掉这段历史，第一次撤销不会把正文清掉。Android 英文界面补上了密码说明、标签说明、设置描述和未命名笔记。",
+      "用浏览器扩展保存 Google 搜索结果里的图片时，会记下这次搜索和关键词。",
+      "官网星标数的取整方式与 GitHub 官方一致。",
+      "公开 Demo 重置后，已经打开的浏览器会改用新的示例数据。"
     ],
     "ja": [
-      "マインドマップとフローチャートの初期テーマを「素」にし、強調色をミディアムグレーにしました。テーマを保存していない図もこの見た目になり、図のキャンバスはノート編集画面の背景色を使います。",
-      "インフォグラフィック編集画面が途中で止まらなくなり、レジストリを更新しても描画に失敗しなくなりました。",
-      "ノート上部の検索ボタンを GitHub リンクに置き換えました。",
-      "書式付きでコピーすると、ほぼ黒の成功表示が出ます。メニュー名は「書式付きコピー」になりました。",
-      "モバイルのシステム情報画面をよりコンパクトにし、文字サイズは読みやすさを保ちました。",
-      "設定のトークンタブの名前を API / MCP に変更しました。"
+      "Web とデスクトップの AI アシスタントは、ノート右側のサイドバーになりました。ファイルを添付でき、ノートを変更する前に確認します。ヘッダーから最近の会話を切り替えられます。デスクトップでは Codex または Antigravity に接続でき、ノートのディレクトリは渡しません。ブラウザではこの選択肢は使えず、設定済みのモデルを使います。設定タブは「モデルとエージェント」になり、先にエージェント、次にモデルを選びます。送信ボタンはほぼ黒です。",
+      "リッチテキストまたは Markdown で文字を選ぶと、説明、翻訳、その箇所への質問ができます。説明と翻訳は原文を固定し、今の会話に返信します。翻訳が選択範囲を置き換えるのは、元の範囲が変わっていないときだけです。",
+      "文字サイズ、行間、配色、カスタム CSS はアカウントに従い、エディタ、公開共有、リッチテキストの貼り付けに反映されます。配色はリンク、コード、太字、チェック済みのタスクに付き、本文の色はそのままです。保存していた緑またはカスタム配色は標準の見た目になります。各配色の横に色チップが付き、段落スタイルのボタンは見出しアイコンになります。段幅はこの端末にだけ保存されます。",
+      "ノート CSS には、対になったライトとダークのプリセットがあります。設定では同じプレビューで両方を切り替えられ、保存時に捨てられる宣言は事前に知らせます。",
+      "システム情報は個人設定に移しました。",
+      "公開共有中のノートは、ヘッダーの共有ボタンが薄いグレーになり、共有中だと分かります。",
+      "スマホのエディタで元に戻す、やり直すが使えます。ノートを開くとその履歴を消すので、最初の取り消しで本文が消えません。Android の英語表示では、パスワードの説明、タグの説明、設定の説明、無題ノートが英語になりました。",
+      "ブラウザ拡張で Google 検索結果の画像を保存すると、その検索とキーワードを記録します。",
+      "サイトのスター数は、GitHub 公式と同じ丸め方で表示します。",
+      "公開デモをリセットしたあと、開いたままのブラウザは新しいサンプルデータに切り替わります。"
     ]
   }
 }
