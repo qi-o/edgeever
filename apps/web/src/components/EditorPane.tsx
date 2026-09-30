@@ -111,6 +111,7 @@ import {
 import { memoShareQueryKey, ShareMemoDialog } from "./dialogs/ShareMemoDialog";
 import { ShareNoteImageDialog } from "./dialogs/ShareNoteImageDialog";
 import { AiSidebar, readAiSidebarOpen, readAiSidebarWidth, writeAiSidebarOpen } from "./ai-sidebar/AiSidebar";
+import { AiSidebarErrorBoundary } from "./ai-sidebar/AiSidebarErrorBoundary";
 import { api } from "@/lib/api";
 import { isDesktopResourceRuntime, stageDesktopResource, toDesktopResourceDownloadUrl, toDesktopResourceUrl } from "@/lib/desktop-resources";
 import { contentReferencesStagedResourceUrl, findMatchingMemoResource, repairMemoStagedResourceUrls, repairTiptapStagedResourceUrls } from "@/lib/staged-resource-repair";
@@ -152,6 +153,7 @@ import {
   getMemoSaveConflictInfoFromQueueItem,
 } from "@/lib/memo-save-conflict";
 import { copyTextToClipboard } from "@/lib/clipboard";
+import { createClientUuid } from "@/lib/client-id";
 import { isLocalMemoId, remapLocalDraftMemoId } from "@/lib/local-mirror";
 import { shouldAcceptRemoteMemoDetail } from "@/lib/memo-detail-freshness";
 import type { EdgeEverRepository } from "@/lib/repository";
@@ -2046,7 +2048,7 @@ const RichEditorPane = ({
     }
     if (!pin) return;
     setSelectionPin(pin);
-    setSelectionRequest({ id: crypto.randomUUID(), kind });
+    setSelectionRequest({ id: createClientUuid(), kind });
     setAiSidebarOpen(true);
   }, [editor, effectiveReadOnly, setAiSidebarOpen, useMarkdownSourceEditor, useMobilePlainTextEditor]);
 
@@ -4373,24 +4375,26 @@ const RichEditorPane = ({
         />
       )}
       </div>
-      <AiSidebar
-        open={aiAssistantOpen}
-        onOpenChange={setAiSidebarOpen}
-        companionAvailable={companionAvailable}
-        selectionMarkdown={selectionPin?.memoId === memo.id ? selectionPin.sentText : ""}
-        selectionPin={selectionPin?.memoId === memo.id ? selectionPin : null}
-        selectionRequest={selectionRequest}
-        onDismissSelectionPin={() => setSelectionPin(null)}
-        onReplaceSelection={replacePinnedSelection}
-        contentMarkdown={currentMarkdownForAi}
-        memoId={memo.id}
-        notebookId={memo.notebookId}
-        notebookTitle={notebookOptions.find((notebook) => notebook.id === memo.notebookId)?.name}
-        noteTitle={title}
-        beforeCompanionApply={beforeCompanionApply}
-        onCompanionNotesChanged={onCompanionNotesChanged}
-        onOpenCompanionNote={onOpenCompanionNote}
-      />
+      <AiSidebarErrorBoundary open={aiAssistantOpen} onOpenChange={setAiSidebarOpen}>
+        <AiSidebar
+          open={aiAssistantOpen}
+          onOpenChange={setAiSidebarOpen}
+          companionAvailable={companionAvailable}
+          selectionMarkdown={selectionPin?.memoId === memo.id ? selectionPin.sentText : ""}
+          selectionPin={selectionPin?.memoId === memo.id ? selectionPin : null}
+          selectionRequest={selectionRequest}
+          onDismissSelectionPin={() => setSelectionPin(null)}
+          onReplaceSelection={replacePinnedSelection}
+          contentMarkdown={currentMarkdownForAi}
+          memoId={memo.id}
+          notebookId={memo.notebookId}
+          notebookTitle={notebookOptions.find((notebook) => notebook.id === memo.notebookId)?.name}
+          noteTitle={title}
+          beforeCompanionApply={beforeCompanionApply}
+          onCompanionNotesChanged={onCompanionNotesChanged}
+          onOpenCompanionNote={onOpenCompanionNote}
+        />
+      </AiSidebarErrorBoundary>
     </div>
   );
 };

@@ -36,6 +36,7 @@ import {
 import { Reasoning, ReasoningContent, ReasoningTrigger } from "@/components/ai-elements/reasoning";
 import { api, ApiRequestError } from "@/lib/api";
 import { copyTextToClipboard } from "@/lib/clipboard";
+import { createClientUuid } from "@/lib/client-id";
 import {
   AI_ATTACHMENT_ACCEPT,
   AiAttachmentError,
@@ -733,7 +734,7 @@ function AiSidebarSession({
   const [turns, setTurns] = useState<CompanionTurn[]>([]);
   const [actions, setActions] = useState<CompanionAction[]>([]);
   const [localTurns, setLocalTurns] = useState<LocalTurn[]>([]);
-  const [threadId, setThreadId] = useState<string>(() => readAiSidebarThread() ?? crypto.randomUUID());
+  const [threadId, setThreadId] = useState<string>(() => readAiSidebarThread() ?? createClientUuid());
   const [attachments, setAttachments] = useState<PendingAttachment[]>([]);
   const [attachmentError, setAttachmentError] = useState<string | null>(null);
   const [conflicts, setConflicts] = useState<Record<string, string>>({});
@@ -831,7 +832,7 @@ function AiSidebarSession({
     if (event.type === "tool") {
       setLocalTurns((previous) => previous.map((turn) => {
         if (turn.id !== turnId || turn.status === "cancelled") return turn;
-        const row = { id: crypto.randomUUID(), name: event.name, status: event.status, title: event.title };
+        const row = { id: createClientUuid(), name: event.name, status: event.status, title: event.title };
         let index = -1;
         for (let toolIndex = turn.tools.length - 1; toolIndex >= 0; toolIndex -= 1) {
           const item = turn.tools[toolIndex];
@@ -995,7 +996,7 @@ function AiSidebarSession({
       throw new Error("unavailable");
     }
     const controller = new AbortController();
-    const id = crypto.randomUUID();
+    const id = createClientUuid();
     const snapshot = attachments;
     attachmentSnapshot.current = snapshot;
     locked.current = true;
@@ -1214,7 +1215,7 @@ function AiSidebarSession({
         existing = [...existing, prepared];
         added.push({
           ...prepared,
-          localId: crypto.randomUUID(),
+          localId: createClientUuid(),
           previewUrl: prepared.mediaType.startsWith("image/") ? `data:${prepared.mediaType};base64,${prepared.base64Data}` : null,
         });
       } catch (cause) {
@@ -1382,7 +1383,7 @@ function AiSidebarSession({
             title={threadTitle}
             onSelect={rememberThread}
             onCreate={() => {
-              if (threads.some((thread) => thread.id === threadId)) rememberThread(crypto.randomUUID());
+              if (threads.some((thread) => thread.id === threadId)) rememberThread(createClientUuid());
             }}
           />
         ) : (
