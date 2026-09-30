@@ -1,5 +1,5 @@
-export type DesktopAcpAdapterId = "codex" | "antigravity";
-export type DesktopAcpAdapterState = "not_installed" | "needs_login" | "available" | "failed";
+export type DesktopAcpAdapterId = "codex" | "antigravity" | "grokBuild" | "deepseekHarness" | "piAgent" | "workbuddyCn" | "workbuddyIntl";
+export type DesktopAcpAdapterState = "not_installed" | "installing" | "needs_login" | "available" | "failed";
 
 export type DesktopAcpPromptCapabilities = {
   image?: boolean;
@@ -12,6 +12,10 @@ export type DesktopAcpAdapter = {
   state: DesktopAcpAdapterState;
   detail?: string;
   promptCapabilities?: DesktopAcpPromptCapabilities;
+  version?: string;
+  managed?: boolean;
+  updateError?: string;
+  authMethods?: Array<{ id: string; name: string }>;
 };
 
 export type DesktopAcpAttachment = {
@@ -65,6 +69,18 @@ export const probeDesktopAcpAdapter = async (input: { id: DesktopAcpAdapterId; p
     return { id: input.id, label: input.id, state: "failed", detail: "desktop_unavailable" };
   }
   return desktop.probeAcpAdapter(input);
+};
+
+export const installDesktopAcpAdapter = async (id: Extract<DesktopAcpAdapterId, "codex" | "antigravity" | "piAgent">) => {
+  const desktop = bridge();
+  if (!desktop?.installAcpAdapter) throw new Error("desktop_acp_unavailable");
+  return desktop.installAcpAdapter(id);
+};
+
+export const authenticateDesktopAcpAdapter = async (input: { id: DesktopAcpAdapterId; path?: string; methodId: string }): Promise<DesktopAcpAdapter> => {
+  const desktop = bridge();
+  if (!desktop?.authenticateAcpAdapter) throw new Error("desktop_acp_unavailable");
+  return desktop.authenticateAcpAdapter(input);
 };
 
 export const promptDesktopAcp = async (input: DesktopAcpPromptInput): Promise<DesktopAcpPromptResult> => {

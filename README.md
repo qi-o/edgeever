@@ -147,10 +147,11 @@ Use the GitHub-hosted installer and the official GHCR image:
 curl -fsSL https://edgeever.org/install.sh | bash
 ```
 
-The command pulls the latest image, generates an administrator password, starts
-EdgeEver with Docker Compose, and schedules daily automatic updates.
+The command pulls the latest image, generates an administrator password, and starts EdgeEver with Docker Compose.
 
 See the [Docker deployment guide](docs/deploy-docker.md) for manual deployment and configuration.
+
+After installation, updates run automatically each day by default. To update manually, run `~/edgeever/update.sh` on the deployment server.
 
 ---
 

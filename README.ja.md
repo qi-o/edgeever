@@ -146,9 +146,11 @@ GitHub ホストのインストーラと公式 GHCR イメージを使います�
 curl -fsSL https://edgeever.org/install.sh | bash
 ```
 
-このコマンドは最新イメージを引き、管理者パスワードを生成し、Docker Compose で EdgeEver を起動し、毎日の自動更新を設定します。
+このコマンドは最新イメージを引き、管理者パスワードを生成し、Docker Compose で EdgeEver を起動します。
 
 手動導入と設定は [Docker deployment guide](docs/deploy-docker.md) を見てください。
+
+インストール後は既定で毎日自動更新されます。手動で更新する場合は、導入先のサーバーで `~/edgeever/update.sh` を実行してください。
 
 ---
 

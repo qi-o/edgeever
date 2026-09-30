@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { EventEmitter } from "node:events";
 import { realpathSync } from "node:fs";
-import { chmod, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { chmod, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import { homedir, tmpdir } from "node:os";
 import path from "node:path";
@@ -13,6 +13,7 @@ import {
   classifyAcpFailure,
   createAcpHostRuntime,
   createAcpSpawnPlan,
+  detectInstalledAgentApps,
   eventsFromSessionUpdate,
   isAuthRequiredError,
   registerAcpIpc,
@@ -59,7 +60,7 @@ const collector = () => {
   };
 };
 
-const fakeAgentSource = ({ reportPath, secretPath, allowImage, allowEmbedded, hold }) => `#!/usr/bin/env bun
+const fakeAgentSource = ({ reportPath, secretPath, allowImage, allowEmbedded, hold, requireAuth }) => `#!/usr/bin/env bun
 import * as acp from ${JSON.stringify(sdkHref)};
 import { writeFileSync } from "node:fs";
 
@@ -68,7 +69,9 @@ const secretPath = ${JSON.stringify(secretPath)};
 const allowImage = ${allowImage ? "true" : "false"};
 const allowEmbedded = ${allowEmbedded ? "true" : "false"};
 const hold = ${hold ? "true" : "false"};
-const report = { initialize: null, newSession: null, permission: null, readError: null, readResult: null, prompt: null };
+const requireAuth = ${requireAuth ? "true" : "false"};
+let authenticated = false;
+const report = { initialize: null, newSession: null, permission: null, readError: null, readResult: null, prompt: null, authMethod: null };
 const save = () => writeFileSync(reportPath, JSON.stringify(report));
 writeFileSync(reportPath + ".pid", String(process.pid));
 let releaseHold = () => {};
@@ -107,9 +110,17 @@ acp.agent({ name: "edgeever-fake-agent" })
     return {
       protocolVersion: ctx.params.protocolVersion,
       agentCapabilities: { promptCapabilities: { image: allowImage, embeddedContext: allowEmbedded } },
+      authMethods: requireAuth ? [{ id: "browser", name: "Browser" }] : [],
     };
   })
+  .onRequest("authenticate", (ctx) => {
+    report.authMethod = ctx.params.methodId;
+    authenticated = true;
+    save();
+    return {};
+  })
   .onRequest("session/new", (ctx) => {
+    if (requireAuth && !authenticated) throw new acp.RequestError(-32000, "auth_required");
     report.newSession = { cwd: ctx.params.cwd, mcpServers: ctx.params.mcpServers };
     save();
     return { sessionId: "sess-1" };
@@ -212,6 +223,71 @@ describe("ACP command allow-list", () => {
     }
   });
 
+  test("detects installed agent applications separately from ACP connectors", () => {
+    const detected = detectInstalledAgentApps({
+      platform: "darwin",
+      home: "/Users/example",
+      pathEnv: "",
+      access() { throw new Error("not on PATH"); },
+      exists(candidate) { return candidate === "/Applications/Antigravity.app" || candidate === "/Applications/ChatGPT.app/Contents/Resources/codex"; },
+    });
+    expect(detected).toEqual(["codex", "antigravity"]);
+  });
+
+  test("starts the official DeepSeek ACP profile and uses a separate adapter for pi", async () => {
+    const directory = await mkdtemp(path.join(tmpdir(), "edgeever-new-agents-"));
+    try {
+      const bin = path.join(directory, "bin");
+      await mkdir(bin);
+      const pi = path.join(bin, "pi");
+      const piAcp = path.join(bin, "pi-acp");
+      const dsh = path.join(bin, "dsh");
+      await writeFile(pi, "#!/bin/sh\nexit 0\n", { mode: 0o755 });
+      await writeFile(piAcp, "#!/bin/sh\nexit 0\n", { mode: 0o755 });
+      await writeFile(dsh, "#!/bin/sh\nexit 0\n", { mode: 0o755 });
+      const deps = { platform: "darwin", pathEnv: bin, home: directory, executablePath: "/usr/bin/node" };
+      expect(resolveAcpCommand({ id: "deepseekHarness" }, deps).command).toEqual({ command: realpathSync(dsh), args: ["--profile", "acp"] });
+      expect(resolveAcpCommand({ id: "piAgent" }, deps).command).toEqual({ command: realpathSync(piAcp), args: [] });
+      expect(detectInstalledAgentApps({ platform: "darwin", pathEnv: bin, home: directory })).toContain("piAgent");
+      const localBin = path.join(directory, ".local", "bin");
+      await mkdir(localBin, { recursive: true });
+      await writeFile(path.join(localBin, "pi"), "#!/bin/sh\nexit 0\n", { mode: 0o755 });
+      await writeFile(path.join(localBin, "pi-acp"), "#!/bin/sh\nexit 0\n", { mode: 0o755 });
+      const fallback = resolveAcpCommand({ id: "piAgent" }, { ...deps, pathEnv: "" });
+      expect(fallback.command.env.PATH.startsWith(`${localBin}:`)).toBe(true);
+      await rm(piAcp);
+      await rm(path.join(localBin, "pi-acp"));
+      expect(resolveAcpCommand({ id: "piAgent" }, deps)).toMatchObject({ ok: false, detail: "adapter_missing" });
+      await rm(pi);
+      await rm(path.join(localBin, "pi"));
+      expect(resolveAcpCommand({ id: "piAgent" }, deps)).toMatchObject({ ok: false, state: "not_installed" });
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
+
+  test("automatically installs only a detected agent missing its ACP connector", async () => {
+    let installed = false;
+    let installs = 0;
+    const runtime = createAcpHostRuntime({
+      platform: "darwin",
+      pathEnv: "",
+      detectInstalledAgentApps: () => ["codex"],
+      adapterManager: {
+        get: () => installed ? { version: "2.0.1", command: { command: "/tmp/codex-acp", args: [] } } : null,
+        install: async () => {
+          installs += 1;
+          installed = true;
+          return { updated: true, version: "2.0.1", adapter: { id: "codex", label: "Codex", state: "available" } };
+        },
+      },
+    });
+    expect((await runtime.installDetected())[0]?.updated).toBe(true);
+    expect(runtime.listAdapters()[0]?.state).toBe("available");
+    expect(await runtime.installDetected()).toEqual([]);
+    expect(installs).toBe(1);
+  });
+
   test("looks up codex-acp.exe only as a win32 basename", () => {
     const seen = [];
     resolveAcpCommand({ id: "codex" }, {
@@ -227,6 +303,47 @@ describe("ACP command allow-list", () => {
       },
     });
     expect(seen).toEqual(["C:\\Tools\\codex-acp", "C:\\Tools\\codex-acp.exe"]);
+  });
+
+  test("runs an installed Grok Build CLI through its built-in ACP mode", async () => {
+    const directory = await mkdtemp(path.join(tmpdir(), "edgeever-grok-acp-"));
+    try {
+      const binary = path.join(directory, ".grok", "bin", "grok");
+      await mkdir(path.dirname(binary), { recursive: true });
+      await writeFile(binary, "#!/bin/sh\nexit 0\n", { mode: 0o755 });
+      const resolved = resolveAcpCommand({ id: "grokBuild" }, { platform: "darwin", pathEnv: "", home: directory });
+      expect(resolved).toEqual({ ok: true, command: { command: realpathSync(binary), args: ["agent", "stdio"] } });
+      const runtime = createAcpHostRuntime({ platform: "darwin", pathEnv: "", home: directory });
+      expect(runtime.listAdapters().find((adapter) => adapter.id === "grokBuild")?.state).toBe("failed");
+      expect(resolveAcpCommand({ id: "grokBuild", path: "../grok" }, { platform: "darwin", home: directory }).detail).toBe("invalid_path");
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
+
+  test("keeps WorkBuddy domestic and international ACP authentication environments separate", async () => {
+    const directory = await mkdtemp(path.join(tmpdir(), "edgeever-workbuddy-acp-"));
+    try {
+      const bundled = path.join(directory, "Applications", "WorkBuddy AI.app", "Contents", "Resources", "app.asar.unpacked", "cli", "bin", "codebuddy");
+      await mkdir(path.dirname(bundled), { recursive: true });
+      await writeFile(bundled, "// fake bundled CLI");
+      const deps = {
+        platform: "darwin", home: directory, pathEnv: "", executablePath: "/usr/bin/node",
+        realpathSync(candidate) {
+          if (!candidate.startsWith(directory)) throw new Error("not installed");
+          return realpathSync(candidate);
+        },
+      };
+      const domestic = resolveAcpCommand({ id: "workbuddyCn" }, deps);
+      const international = resolveAcpCommand({ id: "workbuddyIntl" }, deps);
+      expect(domestic.command.args).toEqual([realpathSync(bundled), "--acp"]);
+      expect(domestic.command.env.CODEBUDDY_INTERNET_ENVIRONMENT).toBe("internal");
+      expect(international.command.args).toEqual([realpathSync(bundled), "--acp"]);
+      expect(international.command.unsetEnv).toEqual(["CODEBUDDY_INTERNET_ENVIRONMENT"]);
+      expect(createAcpSpawnPlan(international.command, directory).options.env.CODEBUDDY_INTERNET_ENVIRONMENT).toBeUndefined();
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
   });
 
   test("requires an Antigravity absolute file and does not accept a directory", async () => {
@@ -424,6 +541,30 @@ describe("ACP stdio session", () => {
     }
   }, 15_000);
 
+  sessionTest("offers advertised agent login and verifies a session after authentication", async () => {
+    const directory = await mkdtemp(path.join(tmpdir(), "edgeever-acp-auth-"));
+    const reportPath = path.join(directory, "report.json");
+    try {
+      const scriptPath = await writeFakeAgent(directory, {
+        reportPath,
+        secretPath: path.join(directory, "secret.txt"),
+        allowImage: false,
+        allowEmbedded: false,
+        hold: false,
+        requireAuth: true,
+      });
+      const runtime = createAcpHostRuntime();
+      const probed = await runtime.probeAdapter({ id: "antigravity", path: scriptPath });
+      expect(probed.state).toBe("needs_login");
+      expect(probed.authMethods).toEqual([{ id: "browser", name: "Browser" }]);
+      const authenticated = await runtime.authenticateAdapter({ id: "antigravity", path: scriptPath, methodId: "browser" });
+      expect(authenticated.state).toBe("available");
+      expect((await readReport(reportPath)).authMethod).toBe("browser");
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  }, 15_000);
+
   sessionTest("streams updates, cancels permission, and never reads a local file", async () => {
     const directory = await mkdtemp(path.join(tmpdir(), "edgeever-acp-prompt-"));
     const reportPath = path.join(directory, "report.json");
@@ -541,7 +682,9 @@ test("desktop preload and main process expose the ACP host", async () => {
     Bun.file(new URL("../preload/index.cjs", import.meta.url)).text(),
     Bun.file(new URL("./acp-host.mjs", import.meta.url)).text(),
   ]);
-  expect(main).toContain("registerAcpIpc(ipcMain)");
+  expect(main).toContain("registerAcpIpc(ipcMain, createAcpHostRuntime({");
+  expect(preload).toContain('installAcpAdapter: (id) => ipcRenderer.invoke("desktop:acp-install", id)');
+  expect(preload).toContain('authenticateAcpAdapter: (input) => ipcRenderer.invoke("desktop:acp-authenticate", input)');
   expect(host).toContain('ipcMain.handle("desktop:acp-prompt"');
   expect(preload).toContain('listAcpAdapters: () => ipcRenderer.invoke("desktop:acp-list")');
   expect(preload).toContain('probeAcpAdapter: (input) => ipcRenderer.invoke("desktop:acp-probe", input)');
@@ -550,5 +693,5 @@ test("desktop preload and main process expose the ACP host", async () => {
   expect(preload).toContain('ipcRenderer.on("desktop:acp-event"');
   const handlers = new Map();
   registerAcpIpc({ handle: (channel, handler) => handlers.set(channel, handler) });
-  expect([...handlers.keys()]).toEqual(["desktop:acp-list", "desktop:acp-probe", "desktop:acp-prompt", "desktop:acp-cancel"]);
+  expect([...handlers.keys()]).toEqual(["desktop:acp-list", "desktop:acp-probe", "desktop:acp-install", "desktop:acp-authenticate", "desktop:acp-prompt", "desktop:acp-cancel"]);
 });

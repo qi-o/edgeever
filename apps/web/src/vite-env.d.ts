@@ -92,21 +92,43 @@ interface EdgeEverDesktopBridge {
   finishWeChatImport?(importId: string, success: boolean): Promise<void>;
   retryWeChatImport?(importId: string): Promise<boolean>;
   listAcpAdapters?(): Promise<Array<{
-    id: "codex" | "antigravity";
+    id: "codex" | "antigravity" | "grokBuild" | "deepseekHarness" | "piAgent" | "workbuddyCn" | "workbuddyIntl";
     label: string;
-    state: "not_installed" | "needs_login" | "available" | "failed";
+    state: "not_installed" | "installing" | "needs_login" | "available" | "failed";
     detail?: string;
     promptCapabilities?: { image?: boolean; embeddedContext?: boolean };
+    version?: string;
+    managed?: boolean;
+    updateError?: string;
+    authMethods?: Array<{ id: string; name: string }>;
   }>>;
-  probeAcpAdapter?(input: { id: "codex" | "antigravity"; path?: string }): Promise<{
-    id: "codex" | "antigravity";
+  probeAcpAdapter?(input: { id: "codex" | "antigravity" | "grokBuild" | "deepseekHarness" | "piAgent" | "workbuddyCn" | "workbuddyIntl"; path?: string }): Promise<{
+    id: "codex" | "antigravity" | "grokBuild" | "deepseekHarness" | "piAgent" | "workbuddyCn" | "workbuddyIntl";
     label: string;
     state: "not_installed" | "needs_login" | "available" | "failed";
     detail?: string;
     promptCapabilities?: { image?: boolean; embeddedContext?: boolean };
+    version?: string;
+    managed?: boolean;
+    authMethods?: Array<{ id: string; name: string }>;
+  }>;
+  installAcpAdapter?(id: "codex" | "antigravity" | "piAgent"): Promise<{ updated: boolean; version?: string; adapter?: {
+    id: "codex" | "antigravity" | "piAgent";
+    label: string;
+    state: "not_installed" | "needs_login" | "available" | "failed";
+    detail?: string;
+    promptCapabilities?: { image?: boolean; embeddedContext?: boolean };
+    authMethods?: Array<{ id: string; name: string }>;
+  } }>;
+  authenticateAcpAdapter?(input: { id: "codex" | "antigravity" | "grokBuild" | "deepseekHarness" | "piAgent" | "workbuddyCn" | "workbuddyIntl"; path?: string; methodId: string }): Promise<{
+    id: "codex" | "antigravity" | "grokBuild" | "deepseekHarness" | "piAgent" | "workbuddyCn" | "workbuddyIntl";
+    label: string;
+    state: "not_installed" | "needs_login" | "available" | "failed";
+    detail?: string;
+    authMethods?: Array<{ id: string; name: string }>;
   }>;
   promptAcp?(input: {
-    adapterId: "codex" | "antigravity";
+    adapterId: "codex" | "antigravity" | "grokBuild" | "deepseekHarness" | "piAgent" | "workbuddyCn" | "workbuddyIntl";
     path?: string;
     prompt: string;
     contextText?: string;

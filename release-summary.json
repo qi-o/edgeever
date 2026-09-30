@@ -1,14 +1,20 @@
 {
-  "version": "1.92.1",
+  "version": "1.93.0",
   "changes": {
     "en-US": [
-      "If the AI sidebar encounters an error, notes remain available to view and edit. The sidebar offers Retry and Close actions."
+      "Desktop users can connect and manage local Agents through ACP, including DeepSeek Harness and pi.",
+      "Double-click an image in a shared note to enlarge it.",
+      "AI settings use clearer service and local Agent labels."
     ],
     "zh-CN": [
-      "AI 侧栏出错时，笔记仍可查看和编辑。侧栏提供重试和关闭操作。"
+      "桌面端可通过 ACP 连接和管理本机 Agent，包括 DeepSeek Harness 和 pi。",
+      "在分享的笔记中双击图片即可放大查看。",
+      "AI 设置中的服务与本机 Agent 说明更清晰。"
     ],
     "ja": [
-      "AI サイドバーでエラーが起きても、ノートの閲覧と編集を続けられます。サイドバーから再試行または閉じることができます。"
+      "デスクトップ版で ACP 経由のローカル Agent の接続と管理に対応し、DeepSeek Harness と pi も利用できます。",
+      "共有ノートの画像をダブルクリックして拡大表示できます。",
+      "AI 設定のサービスとローカル Agent の表記を分かりやすくしました。"
     ]
   }
 }

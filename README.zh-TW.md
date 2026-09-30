@@ -145,8 +145,9 @@ Cloudflare 線上部署可以選擇以下兩種方式之一：
 curl -fsSL https://edgeever.org/install.sh | bash
 ```
 
-此指令會自動拉取最新映像、產生管理員密碼、使用 Docker Compose 啟動
-EdgeEver，並設定每日自動更新。手動部署與設定說明見 [Docker 部署文件](docs/deploy-docker.zh-CN.md)。
+此指令會自動拉取最新映像、產生管理員密碼，並使用 Docker Compose 啟動 EdgeEver。手動部署與設定說明見 [Docker 部署文件](docs/deploy-docker.zh-CN.md)。
+
+安裝後預設每日自動更新。如需手動更新，請在部署伺服器上執行 `~/edgeever/update.sh`。
 
 ---
 
