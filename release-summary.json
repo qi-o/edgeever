@@ -1,23 +1,23 @@
 {
-  "version": "1.103.0",
+  "version": "1.104.0",
   "changes": {
     "en-US": [
-      "Manage all active public note shares from Settings, with quick access to links, notes, and sharing options.",
-      "Keep pasted images and attachments when creating new notes in the desktop app.",
-      "Make Android note metadata more compact, unify title typography, and stabilize title visibility while scrolling in the reader.",
-      "Preserve notes and nested notebooks when newly created desktop notebooks sync to the server, and retry dependent pending changes correctly."
+      "Quickly switch API models and desktop agents from the AI chat composer (#497).",
+      "The Web Clipper adds Hacker News main-post support for Ask HN, Show HN, and link posts, preserving content, links, and metadata without comments. Requires an updated extension (#505, #493).",
+      "The public Demo adds bilingual Word attachment samples for trying document preview and download.",
+      "The iOS download entry clarifies the App Store account region requirement."
     ],
     "zh-CN": [
-      "在设置中集中管理所有有效的笔记公开分享，快捷访问分享链接、原笔记及分享设置。",
-      "修复桌面端新建笔记时粘贴的图片和附件未能保留的问题。",
-      "优化 Android 笔记元信息布局，统一标题字体，并修复阅读滚动时标题显示不稳定的问题。",
-      "修复桌面端新建笔记本同步时笔记与子笔记本关联丢失的问题，并正确重试依赖这些新建内容的待同步操作。"
+      "AI 对话输入框支持快捷切换 API 模型和桌面 Agent，减少往返设置的操作（#497）。",
+      "网页剪藏插件新增 Hacker News 主帖支持，可保存 Ask HN、Show HN 和外链帖的正文、链接及元数据，不包含评论；需更新插件版本（#505，#493）。",
+      "公开 Demo 新增中英文 Word 附件示例，方便体验文档预览与下载。",
+      "iOS 下载入口改用“海外 ID”提示，更清晰地说明 App Store 账号地区要求。"
     ],
     "ja": [
-      "設定から有効なノートの公開共有を一覧で管理し、リンク、元のノート、共有設定にすばやくアクセスできます。",
-      "デスクトップアプリで新規ノートに貼り付けた画像や添付ファイルが保持されない問題を修正しました。",
-      "Androidのノート情報をコンパクトにし、タイトルの書体を統一して、閲覧中のスクロールに伴うタイトル表示を安定させました。",
-      "デスクトップで新規作成したノートブックの同期時にノートと子ノートブックの関連を保持し、依存する保留中の変更を正しく再試行します。"
+      "AIチャットの入力欄からAPIモデルとデスクトップエージェントをすばやく切り替えられます（#497）。",
+      "Web ClipperがHacker NewsのAsk HN、Show HN、リンク投稿に対応し、コメントを除く本文・リンク・メタデータを保存できます。拡張機能の更新が必要です（#505、#493）。",
+      "公開デモに中国語・英語のWord添付サンプルを追加し、文書のプレビューとダウンロードを試せます。",
+      "iOSのダウンロード案内でApp Storeアカウントの地域要件をより明確にしました。"
     ]
   }
 }
