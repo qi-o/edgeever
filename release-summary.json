@@ -1,23 +1,17 @@
 {
-  "version": "1.104.0",
+  "version": "1.105.0",
   "changes": {
     "en-US": [
-      "Quickly switch API models and desktop agents from the AI chat composer (#497).",
-      "The Web Clipper adds Hacker News main-post support for Ask HN, Show HN, and link posts, preserving content, links, and metadata without comments. Requires an updated extension (#505, #493).",
-      "The public Demo adds bilingual Word attachment samples for trying document preview and download.",
-      "The iOS download entry clarifies the App Store account region requirement."
+      "AI agents can preview and delete empty notebook trees through MCP, with protection for notebooks containing active notes, the inbox, and concurrent changes (#509).",
+      "Improve the desktop AI agent selector with cached and preloaded connection status, status dots, clearer menus, and reliable agent settings across layouts."
     ],
     "zh-CN": [
-      "AI 对话输入框支持快捷切换 API 模型和桌面 Agent，减少往返设置的操作（#497）。",
-      "网页剪藏插件新增 Hacker News 主帖支持，可保存 Ask HN、Show HN 和外链帖的正文、链接及元数据，不包含评论；需更新插件版本（#505，#493）。",
-      "公开 Demo 新增中英文 Word 附件示例，方便体验文档预览与下载。",
-      "iOS 下载入口改用“海外 ID”提示，更清晰地说明 App Store 账号地区要求。"
+      "AI Agent 可通过 MCP 预览并删除空笔记本树，同时保护含有效笔记的目录、等待分类及并发变更（#509）。",
+      "改进桌面 AI Agent 选择器：缓存并预加载连接状态，显示状态圆点，简化菜单，并修复不同布局下的 Agent 设置和连接判断。"
     ],
     "ja": [
-      "AIチャットの入力欄からAPIモデルとデスクトップエージェントをすばやく切り替えられます（#497）。",
-      "Web ClipperがHacker NewsのAsk HN、Show HN、リンク投稿に対応し、コメントを除く本文・リンク・メタデータを保存できます。拡張機能の更新が必要です（#505、#493）。",
-      "公開デモに中国語・英語のWord添付サンプルを追加し、文書のプレビューとダウンロードを試せます。",
-      "iOSのダウンロード案内でApp Storeアカウントの地域要件をより明確にしました。"
+      "MCP で空のノートブック階層をプレビューして削除できるようになりました。ノートを含む階層、受信トレイ、同時変更は保護されます（#509）。",
+      "デスクトップの AI エージェント選択で接続状態をキャッシュして事前に読み込み、状態表示とメニューを改善しました。レイアウト間の設定と接続判定も修正しました。"
     ]
   }
 }
