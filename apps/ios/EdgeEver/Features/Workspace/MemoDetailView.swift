@@ -959,7 +959,9 @@ struct MemoDetailView: View {
                 : isVisualDiagram(memo)
                 ? env.preferences.t("图表标题", en: "Diagram title", pl: "Tytuł diagramu")
                 : env.preferences.t("编辑笔记标题", en: "Edit note title", pl: "Edytuj tytuł notatki"))
-            .accessibilityHint(isInfographic(memo)
+            .accessibilityHint(memo.contentMarkdown.contains("<!-- edgeever-poster-v1:")
+                ? env.preferences.t("海报请在 Web 或桌面端编辑", en: "Edit posters on Web or desktop", pl: "Plakaty edytuj w wersji webowej lub desktopowej")
+                : isInfographic(memo)
                 ? env.preferences.t("信息图请在 Web 或桌面端编辑", en: "Edit infographics on Web or desktop", pl: "Infografiki edytuj w wersji webowej lub desktopowej")
                 : isStructuredTable(memo)
                 ? env.preferences.t("多维表格请在 Web 或桌面端编辑", en: "Edit databases on Web or desktop", pl: "Bazy danych edytuj w wersji webowej lub desktopowej")
@@ -995,7 +997,7 @@ struct MemoDetailView: View {
     }
 
     private func blocksRichTextEdit(_ memo: MemoDetail) -> Bool {
-        isVisualDiagram(memo) || isStructuredTable(memo) || isInfographic(memo)
+        isVisualDiagram(memo) || isStructuredTable(memo) || isInfographic(memo) || memo.contentMarkdown.contains("<!-- edgeever-poster-v1:")
     }
 
     private func refreshSyncStatus() {

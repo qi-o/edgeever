@@ -1,20 +1,20 @@
 {
-  "version": "1.107.0",
+  "version": "1.108.0",
   "changes": {
     "en-US": [
-      "Edit formulas visually with a math keyboard or switch to LaTeX source; Markdown math fences now render correctly and dollar signs inside code are preserved. Fixes #514.",
-      "Preserve imported Markdown YAML properties, show them above the note, and retain them on export; ordinary single-note exports remain body-only and ZIP backups keep full metadata.",
-      "Simplify the editor reading width, move the outline toggle to the right, and use a palette icon for Markdown source themes."
+      "Create editable poster notes with templates, bundled fonts, canvas tools, image export, and AI edits through the shared assistant. Edit posters on Web or desktop; Android and iOS display their preview and text. Saving artwork versions adds preview attachments. Update the server to protect poster content from older clients.",
+      "See desktop update download progress and more detailed update diagnostics in system information, including Windows taskbar shortcut details.",
+      "Recover WorkBuddy agent login after cancellation without leaving authentication stuck, with clearer login errors and more compact assistant alerts."
     ],
     "zh-CN": [
-      "支持通过数学键盘可视化编辑公式并切换 LaTeX 源码；修复 Markdown 数学围栏渲染及代码中美元符号的保留问题。修复 #514。",
-      "保留导入 Markdown 的 YAML 属性，在笔记顶部显示并在导出时保留；普通单篇导出仍只包含正文，ZIP 备份保留完整元数据。",
-      "简化编辑器阅读宽度，将大纲开关移到右侧，并以调色板图标表示 Markdown 源码主题。"
+      "新增可编辑的海报笔记，支持模板、内置字体、画布工具、图片导出和统一助手 AI 编辑。Web 和桌面端支持编辑，Android 与 iOS 显示预览和文本。保存画布版本会增加预览附件；请同步升级服务端，以保护海报内容免受旧客户端覆盖。",
+      "桌面端新增更新下载进度显示，系统信息提供更详细的更新诊断及 Windows 任务栏快捷方式信息。",
+      "修复取消 WorkBuddy Agent 登录后认证卡住的问题，并简化登录错误提示与助手侧栏提醒。"
     ],
     "ja": [
-      "数式キーボードによる視覚的な数式編集と LaTeX ソース切り替えに対応。Markdown の数式ブロック表示とコード内のドル記号の保持を修正しました。#514 を修正。",
-      "インポートした Markdown の YAML 属性を保持し、ノート上部に表示してエクスポート時にも維持します。通常の単一ノートは本文のみ、ZIP バックアップはすべてのメタデータを含みます。",
-      "エディターの読み取り幅を簡素化し、アウトライン切り替えを右側に移動。Markdown ソーステーマにパレットアイコンを使用します。"
+      "編集可能なポスターノートを追加しました。テンプレート、内蔵フォント、キャンバスツール、画像書き出し、共通アシスタントによるAI編集に対応します。Webとデスクトップで編集でき、AndroidとiOSではプレビューとテキストを表示します。保存した作品の各バージョンにはプレビュー添付が追加されます。旧クライアントによる上書きを防ぐため、サーバーも更新してください。",
+      "デスクトップ更新のダウンロード進捗を表示します。システム情報には詳細な更新診断とWindowsタスクバーのショートカット情報が追加されます。",
+      "WorkBuddyエージェントのログインをキャンセルした後、認証が停止したままになる問題を修正しました。ログインエラーを分かりやすくし、アシスタントの通知をコンパクトにしました。"
     ]
   }
 }

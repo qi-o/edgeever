@@ -316,6 +316,7 @@ import {
 } from "./editor/editor-pane-helpers";
 
 type EditorPaneProps = {
+  onCreatePoster?: (memo: MemoDetail, text: string) => Promise<void>;
   memo: MemoDetail | null;
   repository: EdgeEverRepository;
   desktopFocusMode: boolean;
@@ -416,6 +417,7 @@ const RichEditorPane = ({
   onRestored,
   onMobileDefaultEditConsumed,
   onSaveAsTemplate,
+  onCreatePoster,
   searchFocusToken,
   replaceFocusToken,
   aiAssistantOpenToken,
@@ -4112,6 +4114,11 @@ const RichEditorPane = ({
               onSearch={() => openNoteSearch()}
               textNoteMenuItems={(
                 <>
+                  {onCreatePoster && !effectiveReadOnly && <DropdownMenuItem disabled={!memo || saveMutation.isPending} onSelect={() => {
+                    const selection = editor?.state.selection;
+                    const text = selection && !selection.empty ? editor?.state.doc.textBetween(selection.from, selection.to, "\n") ?? "" : editor?.getText() ?? memo?.contentText ?? "";
+                    void (async () => { if (!memo) return; if (hasUnsavedChangesRef.current) await saveMutation.mutateAsync(); await onCreatePoster(memoRef.current ?? memo, text); })().catch((error) => setSaveState("error"));
+                  }}>{t("poster.createFromNote")}</DropdownMenuItem>}
                   {!isMobileViewport && !useMobilePlainTextEditor && !useMarkdownSourceEditor && (
                     <DropdownMenuItem
                       className="flex h-9 w-full items-center gap-2 px-3 text-left text-xs text-slate-700 hover:bg-slate-50 cursor-pointer outline-none"

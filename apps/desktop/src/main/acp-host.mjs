@@ -11,6 +11,7 @@ import { waitForChildProcessSpawn } from "./child-process-start.mjs";
 import { createAcpAdapterManager } from "./acp-adapter-manager.mjs";
 import { startAcpMcpBridge } from "./acp-mcp-bridge.mjs";
 import { withAntigravityMacProxy } from "./antigravity-proxy.mjs";
+import { authenticateWorkBuddy, prepareWorkBuddyAuth } from "./workbuddy-auth.mjs";
 
 const ADAPTERS = {
   codex: { id: "codex", label: "Codex" },
@@ -722,7 +723,7 @@ export function createAcpHostRuntime(options = {}) {
     return adapt(resolveAcpCommand(input, commandDeps));
   };
 
-  const connect = async (command, requestId, emit, signal, authMethodId, mcpServers = [], allowPermissions = false) => {
+  const connect = async (command, requestId, emit, signal, authMethodId, mcpServers = [], allowPermissions = false, workBuddyAuth = null) => {
     const cwd = await createAcpWorkspace(mkdtempImpl, options.tmpRoot);
     let child = null;
     let authMethods = [];
@@ -741,7 +742,8 @@ export function createAcpHostRuntime(options = {}) {
       if (authMethodId) {
         if (!authMethods.some((method) => method.id === authMethodId)) throw new Error("invalid_auth_method");
         authenticationPending = true;
-        await connection.authenticate({ methodId: authMethodId });
+        if (workBuddyAuth) await authenticateWorkBuddy(workBuddyAuth, authMethodId, signal);
+        else await connection.authenticate({ methodId: authMethodId });
         authenticationPending = false;
       }
       const session = await connection.newSession({ cwd, mcpServers });
@@ -892,7 +894,10 @@ export function createAcpHostRuntime(options = {}) {
       if (!resolved.ok) return adapterFromResolution(id, resolved);
       let connected;
       try {
-        connected = await withHandshakeTimeout((signal) => connect(resolved.command, `auth-${id}`, () => {}, signal, input.methodId), authenticationTimeoutMs);
+        connected = await withHandshakeTimeout(async (signal) => {
+          const workBuddyAuth = id === "workbuddyCn" || id === "workbuddyIntl" ? await prepareWorkBuddyAuth(resolved.command) : null;
+          return connect(workBuddyAuth?.command ?? resolved.command, `auth-${id}`, () => {}, signal, input.methodId, [], false, workBuddyAuth);
+        }, authenticationTimeoutMs);
         const adapter = { ...adapterShell(id), state: "available", promptCapabilities: connected.promptCapabilities, authMethods: connected.authMethods, ...(resolved.version ? { version: resolved.version, managed: true } : {}) };
         latestStatus.set(id, adapter);
         return adapter;
@@ -900,7 +905,7 @@ export function createAcpHostRuntime(options = {}) {
         const timedOut = error?.code === "TIMEOUT" && error?.authenticationPending;
         const adapter = {
           ...adapterShell(id),
-          ...(timedOut ? { state: "needs_login", detail: "authentication_timeout" } : failureFields(classifyAcpFailure(error))),
+          ...(timedOut ? { state: "needs_login", detail: "authentication_timeout" } : error?.message === "authentication_failed" ? { state: "needs_login", detail: "authentication_failed" } : failureFields(classifyAcpFailure(error))),
           ...((timedOut || isAuthRequiredError(error)) ? { authMethods: error.authMethods ?? latestStatus.get(id)?.authMethods ?? [] } : {}),
           ...(resolved.version ? { version: resolved.version, managed: true } : {}),
         };

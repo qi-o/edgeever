@@ -28,6 +28,7 @@
     "ai": "7.0.58",
     "beautiful-mermaid": "^1.1.3",
     "docx-preview": "0.4.1",
+    "fabric": "7.4.0",
     "highlight.js": "^11.11.1",
     "html-to-image": "^1.11.13",
     "lowlight": "^3.3.0",

@@ -526,10 +526,26 @@ export const TableEditorPane = ({
   const pendingUploadIdsRef = useRef(new Set<string>());
   const savedSnapshotRef = useRef(parsed ? snapshotOf(memo.title ?? "", parsed) : "");
   const saveRef = useRef<() => void>(() => undefined);
-  if (memo.revision >= memoRef.current.revision) memoRef.current = memo;
   titleRef.current = title;
   documentRef.current = document;
   editingRef.current = editing;
+
+  useEffect(() => {
+    // Keep the displayed table and its save base in sync after AI/server edits.
+    // An active local edit must retain its original revision for conflict checks.
+    if (!parsed || dirty || saving || editing || memo.revision < memoRef.current.revision) return;
+    const nextTitle = memo.title ?? "";
+    const nextSnapshot = snapshotOf(nextTitle, parsed);
+    memoRef.current = memo;
+    if (nextSnapshot === savedSnapshotRef.current) return;
+    setTitle(nextTitle);
+    titleRef.current = nextTitle;
+    setDocument(parsed);
+    documentRef.current = parsed;
+    savedSnapshotRef.current = nextSnapshot;
+    setSaveError(null);
+    setSaveFailed(false);
+  }, [dirty, editing, memo, parsed, saving]);
 
   useEffect(() => {
     editSessionRef.current = null;

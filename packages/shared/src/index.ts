@@ -61,3 +61,5 @@ export {
 
 export { attachDiagramScroll } from "./diagram-scroll";
 export * from "./front-matter";
+
+export * from "./poster";
