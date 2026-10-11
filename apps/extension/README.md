@@ -21,6 +21,8 @@ Chrome, Edge, and Firefox Manifest V3 extension for saving the current webpage, 
 - When the page cannot hand over the image bytes, the extension asks once for access to that image's site. After that, later images from the same site save directly.
 - Create a searchable EdgeEver memo with the source URL and a `web-clip` tag.
 
+The development build also includes dedicated detail-page capture for Hacker News, V2EX and Xiaoyuzhou. It saves main-post text and links, topic supplements, or complete episode Show Notes, while keeping toolbar selection priority and reporting partially copied images. See [usage and verification status](../../docs/browser-clipper-platforms.md) ([简体中文](../../docs/browser-clipper-platforms.zh-CN.md)). Full cross-browser live-site acceptance and store publication are still pending.
+
 The extension does not use a central relay service. The page content is sent directly to the EdgeEver instance configured by the user.
 
 HN usage and verification limits are documented in [English](../../docs/browser-clipper-hacker-news.md) and [简体中文](../../docs/browser-clipper-hacker-news.zh-CN.md).

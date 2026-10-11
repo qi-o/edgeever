@@ -1,20 +1,23 @@
 {
-  "version": "1.110.0",
+  "version": "1.111.0",
   "changes": {
     "en-US": [
-      "AI assistants and external tools can create, find, and precisely edit editable posters, with fresh previews rendered by an online Web or desktop client; multi-section content can be arranged into structured layouts.",
-      "Double-click poster images and placeholders to replace them, or grouped text to edit it; template decorations no longer obscure titles in affected layouts.",
-      "Fix encrypted credential initialization for WorkBuddy on desktop to improve AI assistant connectivity."
+      "Open the AI model picker with a single click when adding a model.",
+      "Clarify WorkBuddy connection and sign-in status in AI settings.",
+      "Let the built-in AI companion delete empty notebooks while protecting the inbox and notebooks containing notes.",
+      "Expand Web Clipper support for Facebook, Instagram, LinkedIn, Threads, Bluesky, Hacker News, V2EX, Xiaoyuzhou, Substack and Medium. Extension store availability follows store review."
     ],
     "zh-CN": [
-      "AI 助手与外部工具可创建、查询和精细编辑可编辑海报，并由在线 Web 或桌面客户端生成新预览；多段内容可自动排成清晰的海报版式。",
-      "海报画布支持双击替换图片与占位图、编辑编组内文字，并修复部分模板装饰遮挡标题的问题。",
-      "修复桌面端 WorkBuddy 的加密凭据初始化问题，改善 AI 助手连接。"
+      "添加模型时，单击即可展开 AI 模型选择列表。",
+      "明确 AI 设置中 WorkBuddy 的连接状态与登录状态。",
+      "内置 AI 助手可以删除空笔记本，同时保护收件箱及包含笔记的笔记本。",
+      "网页剪藏扩展增强 Facebook、Instagram、LinkedIn、Threads、Bluesky、Hacker News、V2EX、小宇宙、Substack 和 Medium 的内容提取；扩展商店上架以商店审核结果为准。"
     ],
     "ja": [
-      "AI アシスタントと外部ツールで編集可能なポスターの作成・検索・詳細編集ができ、オンラインの Web またはデスクトップクライアントが新しいプレビューを生成します。複数段落の内容も整理されたレイアウトに配置できます。",
-      "ポスターの画像やプレースホルダーをダブルクリックして置き換え、グループ内の文字を編集できます。一部のテンプレートで装飾がタイトルを隠す問題も修正しました。",
-      "デスクトップ版 WorkBuddy の暗号化された認証情報の初期化を修正し、AI アシスタントの接続を改善しました。"
+      "モデルを追加する際、シングルクリックで AI モデルの選択リストを開けるようになりました。",
+      "AI 設定で WorkBuddy の接続状態とログイン状態をより分かりやすく表示します。",
+      "内蔵 AI アシスタントで空のノートブックを削除できるようになりました。受信箱とノートを含むノートブックは保護されます。",
+      "Web Clipper の Facebook、Instagram、LinkedIn、Threads、Bluesky、Hacker News、V2EX、小宇宙、Substack、Medium への対応を拡充しました。拡張機能ストアでの公開はストア審査後となります。"
     ]
   }
 }
