@@ -118,6 +118,7 @@ import { useWorkspaceRoute } from "@/hooks/useWorkspaceRoute";
 import { useNoteProse } from "@/hooks/useNoteProse";
 import { useWorkspacePreferences } from "@/hooks/useWorkspacePreferences";
 import { useWorkspaceSelection } from "@/hooks/useWorkspaceSelection";
+import { useNotebookSelectionReconciliation } from "@/hooks/useNotebookSelectionReconciliation";
 import { useWorkspaceQueuedSync } from "@/hooks/useWorkspaceQueuedSync";
 import { useWorkspaceMemoRemoval } from "@/hooks/useWorkspaceMemoRemoval";
 import { EdgeEverPluginHost, type RegisteredPluginPanel } from "@/lib/plugins/plugin-host";
@@ -1228,6 +1229,16 @@ export const WorkspaceApp = ({
           : t("workspaceDialogs.deleteNotebookFailed"),
       });
     },
+  });
+
+  useNotebookSelectionReconciliation({
+    notebooks: notebooksQuery.isSuccess && !notebooksQuery.isFetching && !createNotebookMutation.isPending
+      ? notebooksQuery.data.notebooks
+      : undefined,
+    selectedNotebookId,
+    setSelectedNotebookId,
+    setSelectedMemoId,
+    clearMemoSelection,
   });
 
   const revealCreatedMemo = (memo: MemoDetail) => {

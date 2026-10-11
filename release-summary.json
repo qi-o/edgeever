@@ -1,20 +1,29 @@
 {
-  "version": "1.108.0",
+  "version": "1.109.0",
   "changes": {
     "en-US": [
-      "Create editable poster notes with templates, bundled fonts, canvas tools, image export, and AI edits through the shared assistant. Edit posters on Web or desktop; Android and iOS display their preview and text. Saving artwork versions adds preview attachments. Update the server to protect poster content from older clients.",
-      "See desktop update download progress and more detailed update diagnostics in system information, including Windows taskbar shortcut details.",
-      "Recover WorkBuddy agent login after cancellation without leaving authentication stuck, with clearer login errors and more compact assistant alerts."
+      "Refresh note image sharing with refined themes, theme-matched typography, monogram avatars, and a streamlined preview.",
+      "Android fullscreen note images now support pinch zoom and dragging to inspect details (#520).",
+      "Make poster editing more reliable by avoiding false save and draft recovery conflicts, improving editor startup, and consolidating zoom controls.",
+      "Keep the AI assistant launcher consistently positioned across note editors.",
+      "Restore the all-notes view when the selected notebook is deleted from another client.",
+      "Improve WorkBuddy login checks so unusable saved credentials are reported instead of appearing connected."
     ],
     "zh-CN": [
-      "新增可编辑的海报笔记，支持模板、内置字体、画布工具、图片导出和统一助手 AI 编辑。Web 和桌面端支持编辑，Android 与 iOS 显示预览和文本。保存画布版本会增加预览附件；请同步升级服务端，以保护海报内容免受旧客户端覆盖。",
-      "桌面端新增更新下载进度显示，系统信息提供更详细的更新诊断及 Windows 任务栏快捷方式信息。",
-      "修复取消 WorkBuddy Agent 登录后认证卡住的问题，并简化登录错误提示与助手侧栏提醒。"
+      "升级笔记图片分享：精修主题、支持跟随主题的字体、字母头像，并简化预览操作。",
+      "Android 笔记图片全屏后支持双指缩放和拖动，便于查看大图细节（#520）。",
+      "提升海报编辑可靠性：避免误报保存及草稿恢复冲突，改善编辑器启动，并统一缩放操作。",
+      "统一各类笔记编辑器中 AI 助手入口的位置与间距。",
+      "选中的笔记本被其他客户端删除后，自动恢复全部笔记列表。",
+      "改善 WorkBuddy 登录检查，避免不可用的已保存凭据被误显示为连接成功。"
     ],
     "ja": [
-      "編集可能なポスターノートを追加しました。テンプレート、内蔵フォント、キャンバスツール、画像書き出し、共通アシスタントによるAI編集に対応します。Webとデスクトップで編集でき、AndroidとiOSではプレビューとテキストを表示します。保存した作品の各バージョンにはプレビュー添付が追加されます。旧クライアントによる上書きを防ぐため、サーバーも更新してください。",
-      "デスクトップ更新のダウンロード進捗を表示します。システム情報には詳細な更新診断とWindowsタスクバーのショートカット情報が追加されます。",
-      "WorkBuddyエージェントのログインをキャンセルした後、認証が停止したままになる問題を修正しました。ログインエラーを分かりやすくし、アシスタントの通知をコンパクトにしました。"
+      "ノートの画像共有に洗練されたテーマ、テーマに合わせたフォント、イニシャルアイコン、使いやすいプレビューを追加しました。",
+      "Android の全画面画像でピンチズームとドラッグに対応し、細部を確認しやすくしました（#520）。",
+      "ポスター編集の保存・下書き復元時の誤った競合を修正し、起動とズーム操作を改善しました。",
+      "各ノート編集画面で AI アシスタントの位置と間隔を統一しました。",
+      "選択中のノートブックが別の端末で削除された場合、すべてのノート一覧に戻るよう修正しました。",
+      "WorkBuddy のログイン確認を改善し、使用できない保存済み認証情報を接続成功と表示する問題を修正しました。"
     ]
   }
 }
