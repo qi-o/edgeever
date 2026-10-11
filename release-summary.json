@@ -1,29 +1,20 @@
 {
-  "version": "1.109.0",
+  "version": "1.110.0",
   "changes": {
     "en-US": [
-      "Refresh note image sharing with refined themes, theme-matched typography, monogram avatars, and a streamlined preview.",
-      "Android fullscreen note images now support pinch zoom and dragging to inspect details (#520).",
-      "Make poster editing more reliable by avoiding false save and draft recovery conflicts, improving editor startup, and consolidating zoom controls.",
-      "Keep the AI assistant launcher consistently positioned across note editors.",
-      "Restore the all-notes view when the selected notebook is deleted from another client.",
-      "Improve WorkBuddy login checks so unusable saved credentials are reported instead of appearing connected."
+      "AI assistants and external tools can create, find, and precisely edit editable posters, with fresh previews rendered by an online Web or desktop client; multi-section content can be arranged into structured layouts.",
+      "Double-click poster images and placeholders to replace them, or grouped text to edit it; template decorations no longer obscure titles in affected layouts.",
+      "Fix encrypted credential initialization for WorkBuddy on desktop to improve AI assistant connectivity."
     ],
     "zh-CN": [
-      "升级笔记图片分享：精修主题、支持跟随主题的字体、字母头像，并简化预览操作。",
-      "Android 笔记图片全屏后支持双指缩放和拖动，便于查看大图细节（#520）。",
-      "提升海报编辑可靠性：避免误报保存及草稿恢复冲突，改善编辑器启动，并统一缩放操作。",
-      "统一各类笔记编辑器中 AI 助手入口的位置与间距。",
-      "选中的笔记本被其他客户端删除后，自动恢复全部笔记列表。",
-      "改善 WorkBuddy 登录检查，避免不可用的已保存凭据被误显示为连接成功。"
+      "AI 助手与外部工具可创建、查询和精细编辑可编辑海报，并由在线 Web 或桌面客户端生成新预览；多段内容可自动排成清晰的海报版式。",
+      "海报画布支持双击替换图片与占位图、编辑编组内文字，并修复部分模板装饰遮挡标题的问题。",
+      "修复桌面端 WorkBuddy 的加密凭据初始化问题，改善 AI 助手连接。"
     ],
     "ja": [
-      "ノートの画像共有に洗練されたテーマ、テーマに合わせたフォント、イニシャルアイコン、使いやすいプレビューを追加しました。",
-      "Android の全画面画像でピンチズームとドラッグに対応し、細部を確認しやすくしました（#520）。",
-      "ポスター編集の保存・下書き復元時の誤った競合を修正し、起動とズーム操作を改善しました。",
-      "各ノート編集画面で AI アシスタントの位置と間隔を統一しました。",
-      "選択中のノートブックが別の端末で削除された場合、すべてのノート一覧に戻るよう修正しました。",
-      "WorkBuddy のログイン確認を改善し、使用できない保存済み認証情報を接続成功と表示する問題を修正しました。"
+      "AI アシスタントと外部ツールで編集可能なポスターの作成・検索・詳細編集ができ、オンラインの Web またはデスクトップクライアントが新しいプレビューを生成します。複数段落の内容も整理されたレイアウトに配置できます。",
+      "ポスターの画像やプレースホルダーをダブルクリックして置き換え、グループ内の文字を編集できます。一部のテンプレートで装飾がタイトルを隠す問題も修正しました。",
+      "デスクトップ版 WorkBuddy の暗号化された認証情報の初期化を修正し、AI アシスタントの接続を改善しました。"
     ]
   }
 }
