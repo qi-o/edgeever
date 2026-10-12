@@ -298,6 +298,7 @@ export function isAuthRequiredError(error) {
 export function sanitizeFailureDetail(error) {
   const message = error instanceof Error ? error.message : String(error?.message ?? error ?? "");
   let text = message.replace(/\s+/g, " ").trim();
+  text = text.replace(/https?:\/\/[^\s"']+/gi, "[url]");
   const home = homedir();
   if (home && home !== "/" && home !== "\\") text = text.split(home).join("[path]");
   text = text.replace(/~\/[^\s]+/g, "[path]");
@@ -305,6 +306,8 @@ export function sanitizeFailureDetail(error) {
   text = text.replace(/[A-Za-z]:\\(?:[^\\/:*?"<>|\r\n]+\\)*[^\\/:*?"<>|\r\n]*/g, "[path]");
   text = text.replace(/\b(?:[A-Za-z0-9_]*(?:key|token|secret|password|credential)[A-Za-z0-9_]*)=[^\s]+/gi, "[redacted]");
   text = text.replace(/\b(?:bearer|authorization)\s+[^\s]+/gi, "[redacted]");
+  text = text.replace(/(["']?[\w-]*(?:key|token|secret|password|credential|authorization)[\w-]*["']?\s*[:=]\s*)(?:"[^"\r\n]*"|'[^'\r\n]*'|[^\s,}]+)/gi, "$1[redacted]");
+  text = text.replace(/\b(?:sk-ant-|sk-)[A-Za-z0-9_-]+/g, "[redacted]");
   text = text.replace(/\s+/g, " ").trim();
   if (!text || text === "[path]" || text === "[redacted]") return "connection_failed";
   return text.slice(0, 160);
@@ -511,7 +514,7 @@ export function createAcpSpawnPlan(input, cwd) {
     args: spec.args,
     options: {
       cwd: workspace,
-      stdio: ["pipe", "pipe", "ignore"],
+      stdio: ["pipe", "pipe", "pipe"],
       windowsHide: true,
       shell: false,
       ...(spec.env || spec.unsetEnv ? { env: (() => {
@@ -525,7 +528,7 @@ export function createAcpSpawnPlan(input, cwd) {
 
 export function spawnAcpChild(spawnImpl, command, cwd) {
   const plan = createAcpSpawnPlan(command, cwd);
-  const options = { ...plan.options, shell: false, stdio: ["pipe", "pipe", "ignore"] };
+  const options = { ...plan.options, shell: false, stdio: ["pipe", "pipe", "pipe"] };
   if (options.shell !== false) throw new Error("ACP processes cannot use a shell");
   const child = spawnImpl(plan.command, plan.args, options);
   trackChild(child);
@@ -632,7 +635,10 @@ export function automaticAcpPermissionResponse(params) {
   return { outcome: option ? { outcome: "selected", optionId: option.optionId } : { outcome: "cancelled" } };
 }
 
-const createEdgeEverAcpClient = (requestId, emit, allowPermissions) => ({
+const createEdgeEverAcpClient = (requestId, emit, allowPermissions, onAuthStatus) => ({
+  extNotification(method, params) {
+    if (method === "_auth/status_update") onAuthStatus?.(params?.authStatus);
+  },
   requestPermission(params) {
     // Probe, install, and sign-in sessions do not originate from a user prompt.
     return allowPermissions ? automaticAcpPermissionResponse(params) : { outcome: { outcome: "cancelled" } };
@@ -735,14 +741,52 @@ export function createAcpHostRuntime(options = {}) {
     let child = null;
     let authMethods = [];
     let authenticationPending = false;
+    let authStatusKind;
+    let connected = false;
+    let resolveAuthStatus;
+    let authStatusReceived = new Promise((resolve) => { resolveAuthStatus = resolve; });
+    const onAuthStatus = (status) => {
+      if (!status || !["none", "account", "api_key", "gateway", "external"].includes(status.kind)) return;
+      authStatusKind = status.kind;
+      resolveAuthStatus();
+      if (connected && status.kind === "none") abort();
+    };
     const abort = () => stopChild(child);
     signal?.addEventListener("abort", abort, { once: true });
     try {
       if (signal?.aborted) throw Object.assign(new Error("connection_timeout"), { code: "TIMEOUT" });
       child = await spawnAcpChild(spawnImpl, command, cwd);
       if (signal?.aborted) throw Object.assign(new Error("connection_timeout"), { code: "TIMEOUT" });
+      // Drain stderr even when no logger is configured. Bound each connection's
+      // diagnostic output and sanitize before crossing into the log callback.
+      const secretValues = [
+        ...Object.entries({ ...process.env, ...(typeof command === "object" ? command.env : {}) }),
+        ...mcpServers.flatMap((server) => (server.env ?? []).map(({ name, value }) => [name, value])),
+      ].filter(([key, value]) => /key|token|secret|password|credential|authorization/i.test(key) && typeof value === "string" && value.length > 0)
+        .map(([, value]) => value).sort((a, b) => b.length - a.length);
+      let diagnosticBytes = 0;
+      let stderrBuffer = "";
+      const recordStderr = (line) => {
+        if (!line.trim() || diagnosticBytes >= 16_384) return;
+        diagnosticBytes += Buffer.byteLength(line);
+        for (const secret of secretValues) line = line.split(secret).join("[redacted]");
+        try { options.onDiagnostic?.({ requestId, message: sanitizeFailureDetail(line) }); } catch { /* diagnostics are optional */ }
+      };
+      child.stderr?.setEncoding?.("utf8");
+      child.stderr?.on("data", (chunk) => {
+        if (diagnosticBytes >= 16_384) return;
+        stderrBuffer += String(chunk);
+        let newline;
+        while ((newline = stderrBuffer.indexOf("\n")) !== -1) {
+          recordStderr(stderrBuffer.slice(0, newline));
+          stderrBuffer = stderrBuffer.slice(newline + 1);
+        }
+        // Never log a partial line: a secret can span pipe chunks.
+        if (stderrBuffer.length > 16_384) { stderrBuffer = ""; diagnosticBytes = 16_384; }
+      });
+      child.stderr?.on("end", () => { recordStderr(stderrBuffer); stderrBuffer = ""; });
       const stream = acpNdJsonStream(child);
-      const connection = new ClientSideConnection(() => createEdgeEverAcpClient(requestId, emit, allowPermissions), stream);
+      const connection = new ClientSideConnection(() => createEdgeEverAcpClient(requestId, emit, allowPermissions, onAuthStatus), stream);
       void connection.closed?.catch(() => {});
       const initialized = await connection.initialize(acpInitializeParams(version));
       authMethods = publicAuthMethods(initialized);
@@ -757,11 +801,30 @@ export function createAcpHostRuntime(options = {}) {
       if (authMethodId) {
         if (!authMethods.some((method) => method.id === authMethodId)) throw new Error("invalid_auth_method");
         authenticationPending = true;
+        if (authStatusKind === "none") {
+          authStatusKind = undefined;
+          authStatusReceived = new Promise((resolve) => { resolveAuthStatus = resolve; });
+        }
         if (workBuddyAuth) await authenticateWorkBuddy(workBuddyAuth, authMethodId, signal, { readCredential });
         else await connection.authenticate({ methodId: authMethodId });
         authenticationPending = false;
       }
+      if (authStatusKind === "none") throw RequestError.authRequired();
       const session = await connection.newSession({ cwd, mcpServers });
+      // The extension is pushed asynchronously after initialize. Only agents
+      // advertising it must answer; older ACP adapters keep their existing path.
+      if (initialized?.agentCapabilities?._meta?.authStatus != null && authStatusKind === undefined) {
+        let timer;
+        try {
+          await Promise.race([
+            authStatusReceived,
+            new Promise((_, reject) => { timer = setTimeout(() => reject(new Error("identity_status_unavailable")), options.authStatusTimeoutMs ?? 5_500); }),
+            connection.closed.then(() => { throw new Error("connection_closed"); }),
+          ]);
+        } finally { clearTimeout(timer); }
+      }
+      if (authStatusKind === "none") throw RequestError.authRequired();
+      connected = true;
       if (signal?.aborted) throw Object.assign(new Error("connection_timeout"), { code: "TIMEOUT" });
       return {
         cwd,
@@ -771,13 +834,15 @@ export function createAcpHostRuntime(options = {}) {
         authMethods,
         promptCapabilities: normalizePromptCapabilities(initialized),
         stop: abort,
+        authenticationRequired: () => authStatusKind === "none",
       };
     } catch (error) {
-      if (authMethods.length && error && typeof error === "object") error.authMethods = authMethods;
-      if (authenticationPending && error && typeof error === "object") error.authenticationPending = true;
+      const failure = authStatusKind === "none" && !authenticationPending ? RequestError.authRequired() : error;
+      if (authMethods.length && failure && typeof failure === "object") failure.authMethods = authMethods;
+      if (authenticationPending && failure && typeof failure === "object") failure.authenticationPending = true;
       abort();
       await removeAcpWorkspace(cwd, rmImpl);
-      throw error;
+      throw failure;
     } finally {
       signal?.removeEventListener("abort", abort);
     }
@@ -1031,7 +1096,7 @@ export function createAcpHostRuntime(options = {}) {
       };
       void connected.connection.prompt({ sessionId: connected.sessionId, prompt: content.blocks }).then((result) => {
         if (session.cancelled) return finish({ requestId, type: "done" });
-        const failure = promptResultFailure(result);
+        const failure = connected.authenticationRequired() ? "needs_login" : promptResultFailure(result);
         if (failure === "needs_login") {
           rememberPromptStatus({ state: "needs_login", authMethods: connected.authMethods });
         }
@@ -1039,7 +1104,7 @@ export function createAcpHostRuntime(options = {}) {
       }).catch((error) => {
         if (session.cancelled) finish({ requestId, type: "done" });
         else {
-          const failure = classifyAcpFailure(error);
+          const failure = connected.authenticationRequired() ? { state: "needs_login" } : classifyAcpFailure(error);
           if (failure.state === "needs_login") {
             rememberPromptStatus({ state: "needs_login", authMethods: connected.authMethods });
           }

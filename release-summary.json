@@ -1,20 +1,29 @@
 {
-  "version": "1.111.1",
+  "version": "1.112.0",
   "changes": {
     "en-US": [
-      "Explain why Inbox cannot be deleted in notebook menus and prevent the disabled action from changing notebook selection.",
-      "Use a consistent available status label for WorkBuddy in desktop agent settings.",
-      "Update application dependencies and fix known vulnerabilities in XML, ZIP, URI, CSS, SVG, and desktop agent package handling."
+      "Add optional PicGo image uploads on desktop, with connection testing and upload failure recovery. (#530)",
+      "Resize the notebook and note-list panes while keeping note titles, tags, and editor actions readable in smaller windows. (#527, #528)",
+      "Improve desktop agent reliability by recovering temporary note-access failures, detecting missing authentication, and showing clearer diagnostics. (#531)",
+      "Prevent unintended note-reference suggestions while typing and improve the readability of tables in AI responses.",
+      "Refresh the web clipper popup, settings, and save notifications with consistent controls and colors.",
+      "Fix PDF preview loading on Docker and self-hosted installations. If a previously cached PDF worker still fails, clear the site's cache and reload. (#544)"
     ],
     "zh-CN": [
-      "笔记本菜单说明收件箱不可删除的原因，并修复点击禁用删除项时意外切换笔记本的问题。",
-      "统一桌面智能体设置中 WorkBuddy 的可用状态文案。",
-      "更新应用依赖，修复 XML、ZIP、URI、CSS、SVG 和桌面智能体软件包处理相关的已知安全漏洞。"
+      "桌面端新增可选 PicGo 图床上传，支持连接测试和上传失败处理。（#530）",
+      "支持拖动调整笔记本栏和笔记列表宽度，改善小窗口下标题、标签和编辑操作的可读性。（#527、#528）",
+      "改善桌面智能体连接可靠性：恢复临时笔记访问失败，准确识别未登录状态，并提供更清晰的诊断信息。（#531）",
+      "修复输入时意外触发笔记引用建议的问题，并改善 AI 回复表格的可读性。",
+      "更新网页剪藏插件弹窗、设置和保存提示，统一控件与配色。",
+      "修复 Docker 和自托管实例的 PDF 预览加载问题；若旧缓存仍导致失败，请清除站点缓存后重新加载。（#544）"
     ],
     "ja": [
-      "ノートブックメニューで受信トレイを削除できない理由を表示し、無効な削除項目をクリックした際に選択が切り替わる問題を修正しました。",
-      "デスクトップのエージェント設定で WorkBuddy の利用可能ステータス表記を統一しました。",
-      "アプリの依存関係を更新し、XML、ZIP、URI、CSS、SVG、およびデスクトップエージェントのパッケージ処理に関連する既知の脆弱性を修正しました。"
+      "デスクトップに任意の PicGo 画像アップロードを追加し、接続テストと失敗時の復旧に対応しました。",
+      "ノートブックとノート一覧の幅を調整でき、小さなウィンドウでもタイトル、タグ、編集操作が見やすくなりました。",
+      "デスクトップエージェントの一時的なノートアクセス障害からの復旧、未認証状態の検出、診断情報を改善しました。",
+      "入力中の意図しないノート参照候補を抑え、AI 回答内の表を見やすくしました。",
+      "Web クリッパーのポップアップ、設定、保存通知の操作部品と配色を統一しました。",
+      "Docker とセルフホスト環境で PDF プレビューを読み込めない問題を修正しました。古いキャッシュで失敗が続く場合はサイトのキャッシュを削除して再読み込みしてください。"
     ]
   }
 }
