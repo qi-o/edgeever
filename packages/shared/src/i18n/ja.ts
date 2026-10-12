@@ -945,6 +945,7 @@ export const ja = {
     renameAria: "{{name}} の名前を変更",
     deleteNotebook: "ノートブックを削除",
     deleteAria: "{{name}} を削除",
+    inboxDeleteHint: "Inbox は所属先のないノート、および元のノートブックが削除された後に復元したノートの既定の保存先のため、削除できません。名前の変更は可能です。",
   },
   settings: {
     title: "マイ",
@@ -1722,7 +1723,6 @@ export const ja = {
       workbuddyCnLoginHint: "WorkBuddy にログインしてから接続を確認してください。WeChat または組織指定のログイン方法を使用できます。",
       workbuddyIntlLoginHint: "WorkBuddy にログインしてから接続を確認してください。Google / GitHub または組織指定のログイン方法を使用できます。",
       workbuddyCredentialsUnavailable: "WorkBuddy の保存済みログイン情報を読み取れないため、ACP は利用できません。当面は別のローカル Agent を使用してください。再ログインでは解決できません。",
-      workbuddyConnectionReady: "WorkBuddy に接続済み",
       workbuddyConnectedHint: "WorkBuddy にログイン中のアカウントでチャットを開始できます。",
       workbuddyLoginOptions: "ログイン方法",
       workbuddyLoginRequired: "WorkBuddy にログインしてください",

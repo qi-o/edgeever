@@ -1,23 +1,20 @@
 {
-  "version": "1.111.0",
+  "version": "1.111.1",
   "changes": {
     "en-US": [
-      "Open the AI model picker with a single click when adding a model.",
-      "Clarify WorkBuddy connection and sign-in status in AI settings.",
-      "Let the built-in AI companion delete empty notebooks while protecting the inbox and notebooks containing notes.",
-      "Expand Web Clipper support for Facebook, Instagram, LinkedIn, Threads, Bluesky, Hacker News, V2EX, Xiaoyuzhou, Substack and Medium. Extension store availability follows store review."
+      "Explain why Inbox cannot be deleted in notebook menus and prevent the disabled action from changing notebook selection.",
+      "Use a consistent available status label for WorkBuddy in desktop agent settings.",
+      "Update application dependencies and fix known vulnerabilities in XML, ZIP, URI, CSS, SVG, and desktop agent package handling."
     ],
     "zh-CN": [
-      "添加模型时，单击即可展开 AI 模型选择列表。",
-      "明确 AI 设置中 WorkBuddy 的连接状态与登录状态。",
-      "内置 AI 助手可以删除空笔记本，同时保护收件箱及包含笔记的笔记本。",
-      "网页剪藏扩展增强 Facebook、Instagram、LinkedIn、Threads、Bluesky、Hacker News、V2EX、小宇宙、Substack 和 Medium 的内容提取；扩展商店上架以商店审核结果为准。"
+      "笔记本菜单说明收件箱不可删除的原因，并修复点击禁用删除项时意外切换笔记本的问题。",
+      "统一桌面智能体设置中 WorkBuddy 的可用状态文案。",
+      "更新应用依赖，修复 XML、ZIP、URI、CSS、SVG 和桌面智能体软件包处理相关的已知安全漏洞。"
     ],
     "ja": [
-      "モデルを追加する際、シングルクリックで AI モデルの選択リストを開けるようになりました。",
-      "AI 設定で WorkBuddy の接続状態とログイン状態をより分かりやすく表示します。",
-      "内蔵 AI アシスタントで空のノートブックを削除できるようになりました。受信箱とノートを含むノートブックは保護されます。",
-      "Web Clipper の Facebook、Instagram、LinkedIn、Threads、Bluesky、Hacker News、V2EX、小宇宙、Substack、Medium への対応を拡充しました。拡張機能ストアでの公開はストア審査後となります。"
+      "ノートブックメニューで受信トレイを削除できない理由を表示し、無効な削除項目をクリックした際に選択が切り替わる問題を修正しました。",
+      "デスクトップのエージェント設定で WorkBuddy の利用可能ステータス表記を統一しました。",
+      "アプリの依存関係を更新し、XML、ZIP、URI、CSS、SVG、およびデスクトップエージェントのパッケージ処理に関連する既知の脆弱性を修正しました。"
     ]
   }
 }

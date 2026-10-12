@@ -956,6 +956,7 @@ export const zhCN = {
     renameAria: "重命名 {{name}}",
     deleteNotebook: "删除笔记本",
     deleteAria: "删除 {{name}}",
+    inboxDeleteHint: "Inbox 是没有指定笔记本的笔记、以及原笔记本被删除后恢复的笔记的默认归宿，因此不能删除。你可以重命名它。",
   },
   settings: {
     title: "我的",
@@ -1733,7 +1734,6 @@ export const zhCN = {
       workbuddyCnLoginHint: "请登录 WorkBuddy，并在完成后检查连接。可使用微信或组织指定的登录方式。",
       workbuddyIntlLoginHint: "请登录 WorkBuddy，并在完成后检查连接。可使用 Google / GitHub 或组织指定的登录方式。",
       workbuddyCredentialsUnavailable: "无法读取 WorkBuddy 保存的登录凭据，ACP 当前不可用。请先改用其他本机 Agent；重复点击登录无法解决此问题。",
-      workbuddyConnectionReady: "已连接 WorkBuddy",
       workbuddyConnectedHint: "可开始聊天，将使用 WorkBuddy 中已登录的账号。",
       workbuddyLoginOptions: "登录选项",
       workbuddyLoginRequired: "请登录 WorkBuddy",

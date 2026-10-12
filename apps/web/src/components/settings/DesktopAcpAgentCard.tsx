@@ -58,7 +58,6 @@ const statusKey = (adapter: DesktopAcpAdapter | undefined, probing: boolean) => 
   if (adapter.id === "piAgent" && adapter.state === "not_installed") return adapter.detail === "adapter_missing" ? "aiAssistant.agentSource.piAgentAdapterMissing" : "aiAssistant.agentSource.piAgentNotFound";
   if ((adapter.id === "workbuddyCn" || adapter.id === "workbuddyIntl") && adapter.state === "not_installed") return "aiAssistant.agentSource.workbuddyNotFound";
   if ((adapter.id === "workbuddyCn" || adapter.id === "workbuddyIntl") && adapter.state === "needs_login") return "aiAssistant.agentSource.workbuddyLoginRequired";
-  if ((adapter.id === "workbuddyCn" || adapter.id === "workbuddyIntl") && adapter.state === "available") return "aiAssistant.agentSource.workbuddyConnectionReady";
   return `aiAssistant.agentSource.states.${adapter.state}`;
 };
 

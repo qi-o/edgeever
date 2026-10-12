@@ -945,6 +945,7 @@ export const pl = {
     renameAria: "Zmień nazwę {{name}}",
     deleteNotebook: "Usuń notatnik",
     deleteAria: "Usuń {{name}}",
+    inboxDeleteHint: "Inbox to domyślny notatnik dla notatek bez notatnika oraz notatek przywróconych po usunięciu ich pierwotnego notatnika, więc nie można go usunąć. Możesz zmienić jego nazwę.",
   },
   settings: {
     title: "Profil",
@@ -1722,7 +1723,6 @@ export const pl = {
       workbuddyCnLoginHint: "Zaloguj się do WorkBuddy, a następnie sprawdź połączenie. Użyj WeChat lub metody logowania swojej organizacji.",
       workbuddyIntlLoginHint: "Zaloguj się do WorkBuddy, a następnie sprawdź połączenie. Użyj Google / GitHub lub metody logowania swojej organizacji.",
       workbuddyCredentialsUnavailable: "Nie można odczytać zapisanych danych logowania WorkBuddy, więc ACP jest niedostępne. Na razie użyj innego lokalnego agenta; ponowne logowanie nie rozwiąże problemu.",
-      workbuddyConnectionReady: "Połączono z WorkBuddy",
       workbuddyConnectedHint: "Możesz rozpocząć czat z kontem zalogowanym w WorkBuddy.",
       workbuddyLoginOptions: "Opcje logowania",
       workbuddyLoginRequired: "Zaloguj się do WorkBuddy",

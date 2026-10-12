@@ -956,6 +956,7 @@ export const enUS = {
     renameAria: "Rename {{name}}",
     deleteNotebook: "Delete notebook",
     deleteAria: "Delete {{name}}",
+    inboxDeleteHint: "Inbox is the default notebook for notes without one, and for notes restored after their original notebook was deleted, so it can't be deleted. You can rename it.",
   },
   settings: {
     title: "Me",
@@ -1733,7 +1734,6 @@ export const enUS = {
       workbuddyCnLoginHint: "Sign in to WorkBuddy, then check the connection. Use WeChat or your organization’s sign-in method.",
       workbuddyIntlLoginHint: "Sign in to WorkBuddy, then check the connection. Use Google / GitHub or your organization’s sign-in method.",
       workbuddyCredentialsUnavailable: "WorkBuddy saved sign-in credentials could not be read, so ACP is unavailable. Use another local Agent for now; retrying sign-in cannot resolve this issue.",
-      workbuddyConnectionReady: "Connected to WorkBuddy",
       workbuddyConnectedHint: "You can start chatting with the account signed in to WorkBuddy.",
       workbuddyLoginOptions: "Sign-in options",
       workbuddyLoginRequired: "Sign in to WorkBuddy",
