@@ -129,7 +129,10 @@ const DesktopAcpAgentCardBody = ({ bridge }: { bridge: boolean }) => {
   useEffect(() => {
     let cancelled = false;
     const refresh = () => void listDesktopAcpAdapters().then((adapters) => {
-      if (!cancelled) setListed(adapters);
+      if (!cancelled) {
+        setListed(adapters);
+        setAdapterPath(adapters.find((adapter) => adapter.id === "antigravity")?.customPath ?? "");
+      }
     }).catch(() => {});
     refresh();
     const interval = window.setInterval(refresh, 5_000);
@@ -311,7 +314,7 @@ const DesktopAcpAgentCardBody = ({ bridge }: { bridge: boolean }) => {
             </div>
 
             {adapterId === "antigravity" ? (
-              <label className="grid gap-1.5 text-xs font-normal leading-5 text-slate-700">
+              <div className="grid gap-1.5 text-xs font-normal leading-5 text-slate-700">
                 <span className="flex items-center gap-1.5">
                   {t("aiAssistant.agentSource.pathLabel")}
                   <TooltipProvider>
@@ -328,16 +331,21 @@ const DesktopAcpAgentCardBody = ({ bridge }: { bridge: boolean }) => {
                 <Input
                   className="h-8 text-xs"
                   value={adapterPath}
+                  aria-label={t("aiAssistant.agentSource.pathLabel")}
                   spellCheck={false}
                   autoCapitalize="off"
                   autoCorrect="off"
                   placeholder={t("aiAssistant.agentSource.pathPlaceholder")}
-                  onChange={(event) => {
-                    setAdapterPath(event.target.value);
-                    setProbed(null);
-                  }}
+                  readOnly
                 />
-              </label>
+                <Button type="button" variant="outline" size="sm" onClick={() => {
+                  void window.edgeeverDesktop?.chooseAcpAdapterPath?.().then((selected) => {
+                    if (selected) { setAdapterPath(selected); setProbed(null); }
+                  }).catch(() => setInstallError(true));
+                }}>
+                  {t("aiAssistant.agentSource.choosePath")}
+                </Button>
+              </div>
             ) : null}
 
             <div className="space-y-2 rounded-lg bg-muted/40 p-3">

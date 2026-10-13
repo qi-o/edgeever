@@ -1297,6 +1297,6 @@ test("desktop preload and main process expose the ACP host", async () => {
   expect(preload).toContain('ipcRenderer.on("desktop:acp-event"');
   const handlers = new Map();
   registerAcpIpc({ handle: (channel, handler) => handlers.set(channel, handler) });
-  expect([...handlers.keys()]).toEqual(["desktop:acp-list", "desktop:acp-probe", "desktop:acp-install", "desktop:acp-authenticate", "desktop:acp-prompt", "desktop:acp-cancel"]);
-  expect(() => handlers.get("desktop:acp-prompt")({ sender: {} }, { prompt: "test" })).toThrow("acp_prompt_forbidden");
+  expect([...handlers.keys()]).toEqual(["desktop:acp-list", "desktop:acp-choose-path", "desktop:acp-probe", "desktop:acp-install", "desktop:acp-authenticate", "desktop:acp-prompt", "desktop:acp-cancel"]);
+  await expect(handlers.get("desktop:acp-prompt")({ sender: {} }, { prompt: "test" })).rejects.toThrow("acp_prompt_forbidden");
 });

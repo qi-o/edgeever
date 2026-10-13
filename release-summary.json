@@ -1,29 +1,23 @@
 {
-  "version": "1.112.0",
+  "version": "1.113.0",
   "changes": {
     "en-US": [
-      "Add optional PicGo image uploads on desktop, with connection testing and upload failure recovery. (#530)",
-      "Resize the notebook and note-list panes while keeping note titles, tags, and editor actions readable in smaller windows. (#527, #528)",
-      "Improve desktop agent reliability by recovering temporary note-access failures, detecting missing authentication, and showing clearer diagnostics. (#531)",
-      "Prevent unintended note-reference suggestions while typing and improve the readability of tables in AI responses.",
-      "Refresh the web clipper popup, settings, and save notifications with consistent controls and colors.",
-      "Fix PDF preview loading on Docker and self-hosted installations. If a previously cached PDF worker still fails, clear the site's cache and reload. (#544)"
+      "Let trusted plugins edit diagrams, tables, posters, and infographics with conflict checks that protect newer note changes.",
+      "Harden desktop template previews, resource handling, agent execution, and instance credentials against unsafe content and cross-instance credential exposure. (#546)",
+      "Improve update failure diagnostics so network connection problems are easier to investigate. (#513)",
+      "Refine note reading colors in light and dark modes, combine red and orange into vermilion orange, and keep inline code colors neutral."
     ],
     "zh-CN": [
-      "桌面端新增可选 PicGo 图床上传，支持连接测试和上传失败处理。（#530）",
-      "支持拖动调整笔记本栏和笔记列表宽度，改善小窗口下标题、标签和编辑操作的可读性。（#527、#528）",
-      "改善桌面智能体连接可靠性：恢复临时笔记访问失败，准确识别未登录状态，并提供更清晰的诊断信息。（#531）",
-      "修复输入时意外触发笔记引用建议的问题，并改善 AI 回复表格的可读性。",
-      "更新网页剪藏插件弹窗、设置和保存提示，统一控件与配色。",
-      "修复 Docker 和自托管实例的 PDF 预览加载问题；若旧缓存仍导致失败，请清除站点缓存后重新加载。（#544）"
+      "受信插件可编辑图表、表格、海报和信息图，并通过冲突检查保护笔记中的较新改动。",
+      "加固桌面模板预览、资源处理、智能体执行及实例凭据边界，降低不安全内容和跨实例凭据泄露风险。（#546）",
+      "完善更新失败诊断，便于排查网络连接问题。（#513）",
+      "优化浅色与深色模式下的正文配色，将红色和橙色合并为朱橙，并统一行内代码的中性配色。"
     ],
     "ja": [
-      "デスクトップに任意の PicGo 画像アップロードを追加し、接続テストと失敗時の復旧に対応しました。",
-      "ノートブックとノート一覧の幅を調整でき、小さなウィンドウでもタイトル、タグ、編集操作が見やすくなりました。",
-      "デスクトップエージェントの一時的なノートアクセス障害からの復旧、未認証状態の検出、診断情報を改善しました。",
-      "入力中の意図しないノート参照候補を抑え、AI 回答内の表を見やすくしました。",
-      "Web クリッパーのポップアップ、設定、保存通知の操作部品と配色を統一しました。",
-      "Docker とセルフホスト環境で PDF プレビューを読み込めない問題を修正しました。古いキャッシュで失敗が続く場合はサイトのキャッシュを削除して再読み込みしてください。"
+      "信頼されたプラグインから図、表、ポスター、インフォグラフィックを編集でき、競合チェックで新しい変更を保護します。",
+      "デスクトップのテンプレート表示、リソース処理、エージェント実行、インスタンス認証情報の境界を強化します。",
+      "更新失敗時の診断を改善し、ネットワーク接続の問題を調べやすくしました。",
+      "ライト・ダークモードの本文配色を改善し、赤とオレンジを朱色に統合して、インラインコードを中立色に統一しました。"
     ]
   }
 }

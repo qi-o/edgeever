@@ -54,6 +54,7 @@ contextBridge.exposeInMainWorld("edgeeverDesktop", Object.freeze({
     return () => ipcRenderer.removeListener("desktop:ai-direct-chunk", listener);
   },
   listAcpAdapters: () => ipcRenderer.invoke("desktop:acp-list"),
+  chooseAcpAdapterPath: () => ipcRenderer.invoke("desktop:acp-choose-path", "antigravity"),
   probeAcpAdapter: (input) => ipcRenderer.invoke("desktop:acp-probe", input),
   installAcpAdapter: (id) => ipcRenderer.invoke("desktop:acp-install", id),
   authenticateAcpAdapter: (input) => ipcRenderer.invoke("desktop:acp-authenticate", input),

@@ -4,6 +4,7 @@ import { accessSync, constants as fsConstants, existsSync, readFileSync, realpat
 import { mkdtemp, rm } from "node:fs/promises";
 import { homedir, tmpdir } from "node:os";
 import path from "node:path";
+import { validateTrustedAcpPath } from "./acp-path-store.mjs";
 import { Readable, Writable } from "node:stream";
 import { fileURLToPath } from "node:url";
 import { ClientSideConnection, ndJsonStream, PROTOCOL_VERSION, RequestError } from "@agentclientprotocol/sdk";
@@ -865,12 +866,14 @@ export function createAcpHostRuntime(options = {}) {
   };
 
   return {
-    listAdapters() {
+    clearAdapterStatus(id) { latestStatus.delete(id); },
+    listAdapters(configuredPaths = {}) {
       return ["codex", "claudeCode", "antigravity", "openClaw", "hermesAgent", "grokBuild", "deepseekHarness", "piAgent", "workbuddyCn", "workbuddyIntl"].map((id) => {
         if (installingIds.has(id)) return { ...adapterShell(id), state: "installing" };
-        const resolved = resolveCommand({ id }, { prepareProxy: false });
+        const customPath = configuredPaths[id];
+        const resolved = resolveCommand({ id, path: customPath }, { prepareProxy: false });
         return resolved.ok
-          ? { ...adapterShell(id), ...(latestStatus.get(id) ?? { state: "not_probed", detail: "not_probed" }), ...(resolved.version ? { version: resolved.version, managed: true } : {}), ...(updateFailures.has(id) ? { updateError: updateFailures.get(id) } : {}) }
+          ? { ...adapterShell(id), ...(latestStatus.get(id) ?? { state: "not_probed", detail: "not_probed" }), ...(resolved.version ? { version: resolved.version, managed: true } : {}), ...(customPath ? { customPath, managed: false, version: undefined } : {}), ...(updateFailures.has(id) ? { updateError: updateFailures.get(id) } : {}) }
           : adapterFromResolution(id, resolved);
       });
     },
@@ -1136,27 +1139,59 @@ const failureFields = (failure) => (
     : { state: failure.state }
 );
 
-export function registerAcpIpc(ipcMain, runtime = createAcpHostRuntime(), { allowInstall = () => false, allowPrompt = allowInstall } = {}) {
+export function registerAcpIpc(ipcMain, runtime = createAcpHostRuntime(), {
+  allowInstall = () => false, allowPrompt = allowInstall,
+  adapterPathStore = { get: async () => null, set: async () => {} },
+  chooseAdapterPath = async () => null,
+  validateAdapterPath = validateTrustedAcpPath,
+} = {}) {
+  let choosing = false;
+  const withRecordedPath = async (input) => {
+    const recorded = (input?.id ?? input?.adapterId) === "antigravity" ? await adapterPathStore.get() : null;
+    return { ...input, path: recorded ? await validateAdapterPath(recorded) : undefined };
+  };
   const send = (sender, event) => {
     if (!sender || sender.isDestroyed?.()) return;
     sender.send("desktop:acp-event", event);
   };
-  ipcMain.handle("desktop:acp-list", () => runtime.listAdapters());
-  ipcMain.handle("desktop:acp-probe", (_event, input) => runtime.probeAdapter(input));
-  ipcMain.handle("desktop:acp-install", (event, id) => {
-    if (!allowInstall(event.sender)) throw new Error("adapter_install_forbidden");
-    return runtime.installAdapter(id);
+  ipcMain.handle("desktop:acp-list", async (event) => {
+    if (!allowPrompt(event.sender, event)) throw new Error("acp_list_forbidden");
+    const recorded = await adapterPathStore.get();
+    return runtime.listAdapters({ antigravity: recorded }).map((adapter) => adapter.id === "antigravity" && recorded
+      ? { ...adapter, customPath: recorded } : adapter);
   });
-  ipcMain.handle("desktop:acp-authenticate", (event, input) => {
-    if (!allowInstall(event.sender)) throw new Error("adapter_auth_forbidden");
-    return runtime.authenticateAdapter(input);
+  ipcMain.handle("desktop:acp-choose-path", async (event, id) => {
+    if (!allowInstall(event.sender, event) || id !== "antigravity") throw new Error("adapter_path_forbidden");
+    if (choosing || event.sender.isFocused?.() !== true) return null;
+    choosing = true;
+    try {
+      const selected = await chooseAdapterPath();
+      if (!selected) return null;
+      await adapterPathStore.set(selected);
+      runtime.clearAdapterStatus?.("antigravity");
+      return selected;
+    } finally { choosing = false; }
   });
-  ipcMain.handle("desktop:acp-prompt", (event, input) => {
-    if (!allowPrompt(event.sender)) throw new Error("acp_prompt_forbidden");
-    return runtime.prompt(input, (acpEvent) => send(event.sender, acpEvent));
+  ipcMain.handle("desktop:acp-probe", async (event, input) => {
+    if (!allowPrompt(event.sender, event)) throw new Error("acp_probe_forbidden");
+    return runtime.probeAdapter(await withRecordedPath(input));
+  });
+  ipcMain.handle("desktop:acp-install", async (event, id) => {
+    if (!allowInstall(event.sender, event)) throw new Error("adapter_install_forbidden");
+    const result = await runtime.installAdapter(id);
+    if (id === "antigravity" && result.updated) await adapterPathStore.set(null);
+    return result;
+  });
+  ipcMain.handle("desktop:acp-authenticate", async (event, input) => {
+    if (!allowInstall(event.sender, event)) throw new Error("adapter_auth_forbidden");
+    return runtime.authenticateAdapter(await withRecordedPath(input));
+  });
+  ipcMain.handle("desktop:acp-prompt", async (event, input) => {
+    if (!allowPrompt(event.sender, event)) throw new Error("acp_prompt_forbidden");
+    return runtime.prompt(await withRecordedPath(input), (acpEvent) => send(event.sender, acpEvent));
   });
   ipcMain.handle("desktop:acp-cancel", (event, requestId) => {
-    if (!allowPrompt(event.sender)) throw new Error("acp_cancel_forbidden");
+    if (!allowPrompt(event.sender, event)) throw new Error("acp_cancel_forbidden");
     return runtime.cancel(requestId);
   });
   return runtime;
