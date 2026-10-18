@@ -44,6 +44,7 @@ import {
   buildImageExportBasename,
   buildNoteImageCardMarkup,
   generateCardCss,
+  prepareNoteImageContent,
   planNativeNoteImageRender,
 } from "@edgeever/shared/note-image-card";
 import { createEdgeEverMathematics } from "@edgeever/shared/mathematics";
@@ -1267,6 +1268,7 @@ async function exportNoteImage(request: ImageExportRequest) {
     if (element instanceof HTMLButtonElement) element.remove();
   });
 
+  prepareNoteImageContent(editorClone);
   const bodyHtml = editorClone.innerHTML;
 
   const host = document.createElement("div");
@@ -1282,7 +1284,7 @@ async function exportNoteImage(request: ImageExportRequest) {
     bodyHtml,
     theme: resolvedTheme,
     fontStyle,
-    showTitle: request.showTitle ?? true,
+    showTitle: request.showTitle ?? false,
     showNotebook: request.showNotebook ?? false,
     showTags: request.showTags ?? false,
     showUpdatedAt: request.showUpdatedAt ?? true,

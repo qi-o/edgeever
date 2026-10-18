@@ -2467,6 +2467,14 @@ export const ja = {
         warm: "あたたか",
       },
       fontStyle: "書体",
+      templateFonts: {
+        puhui: "Alibaba PuHuiTi",
+        misans: "MiSans",
+        mincho: "匯文明朝体",
+        song: "源ノ明朝",
+        longcang: "Long Cang",
+        geist: "Geist Mono",
+      },
       fontStyles: {
         "source-han-serif": "Noto Serif SC",
         "anton": "Anton",

@@ -2476,6 +2476,14 @@ export const zhCN = {
         warm: "暖色",
       },
       fontStyle: "字体风格",
+      templateFonts: {
+        puhui: "阿里巴巴普惠体",
+        misans: "MiSans",
+        mincho: "汇文明朝体",
+        song: "思源宋体",
+        longcang: "龙藏体",
+        geist: "Geist Mono",
+      },
       fontStyles: {
         "source-han-serif": "思源宋体",
         "anton": "Anton",

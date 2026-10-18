@@ -1,41 +1,23 @@
 {
-  "version": "1.122.0",
+  "version": "1.123.0",
   "changes": {
     "en-US": [
-      "Use all 23 poster fonts across typography pickers and improve built-in poster font pairings.",
-      "Fix overlapping poster elements and preserve consistent card sections when switching templates.",
-      "Show QR codes for note and notebook share links. Thanks @dkoryto (#610).",
-      "Show Docker image build and deployment information in System information. Thanks @dkoryto (#602).",
-      "Localize untitled notes and diagrams on public share pages. Thanks @dkoryto (#605).",
-      "Keep public share and form links out of search indexes and shared caches, and prevent share tokens from leaking through referrers. Thanks @dkoryto (#608).",
-      "Improve browser clipping across supported platforms, including Jike, Medium and social posts. Thanks @sivdead (#611).",
-      "Fix empty note bodies when sharing posts to the iOS app (#601).",
-      "Prevent already handled Android shares from restarting clipping when returning to the app.",
-      "Clarify the manual Cloudflare deployment instructions on the website. Thanks @dkoryto (#604)."
+      "Choose image-sharing fonts from a preview list on Android and iOS, with the current theme font shown clearly.",
+      "Improve shared note images with theme-appropriate typography, clearer rich content, a warm book-excerpt background, and cleaner signatures. New image-sharing preferences use the glass theme and hide the note title by default.",
+      "Fix image exports stalling after navigating between notes on mobile and preserve full-resolution exported image previews on Android.",
+      "Fix Jike Web Clipper captures mixing post content and source links when switching between posts by the same author. Thanks to @sivdead (#614, #615)."
     ],
     "zh-CN": [
-      "字体选择统一支持全部 23 款海报字体，并优化内置海报模板的字体搭配。",
-      "修复海报元素重叠，并在切换模板时保持卡片分区一致。",
-      "笔记和笔记本分享链接新增二维码。感谢 @dkoryto（#610）。",
-      "系统信息新增 Docker 镜像构建和部署信息。感谢 @dkoryto（#602）。",
-      "公开分享页面中的未命名笔记和图表跟随界面语言。感谢 @dkoryto（#605）。",
-      "为公开分享和表单链接添加禁止搜索收录与共享缓存策略，防止来源信息泄露分享令牌。感谢 @dkoryto（#608）。",
-      "改进即刻、Medium 和社交帖子等平台的浏览器剪藏。感谢 @sivdead（#611）。",
-      "修复向 iOS 应用分享帖子时笔记正文可能为空的问题（#601）。",
-      "修复返回 Android 应用时已处理的分享可能重复启动剪藏的问题。",
-      "完善官网的 Cloudflare 手动部署指引。感谢 @dkoryto（#604）。"
+      "Android 和 iOS 支持通过预览列表选择分享图片字体，并清晰显示当前主题字体。",
+      "优化笔记分享图片的主题字体、内容层次和富文本呈现，书摘主题采用暖纸背景，签名更简洁；新的图片分享偏好默认使用毛玻璃主题并隐藏笔记标题。",
+      "修复移动端切换笔记后图片导出卡住的问题，并保留 Android 导出图片预览的完整分辨率。",
+      "修复即刻网页剪藏在同一作者的帖子之间切换时正文与来源链接错配的问题。感谢 @sivdead（#614、#615）。"
     ],
     "ja": [
-      "文字設定で全23種類のポスターフォントを選択でき、標準テンプレートの組み合わせも改善しました。",
-      "ポスター要素の重なりを修正し、テンプレート切り替え時のカード構成を改善しました。",
-      "ノートとノートブックの共有リンクにQRコードを追加しました。@dkoryto (#610)。",
-      "システム情報にDockerイメージのビルドとデプロイ情報を表示します。@dkoryto (#602)。",
-      "公開共有ページの無題ノートと図表名を画面の言語に合わせます。@dkoryto (#605)。",
-      "公開共有とフォームの検索登録・共有キャッシュを抑制し、リファラー経由のトークン漏洩を防ぎます。@dkoryto (#608)。",
-      "即刻、Medium、SNS投稿などのブラウザークリップを改善しました。@sivdead (#611)。",
-      "iOSアプリに投稿を共有した際に本文が空になる問題を修正しました (#601)。",
-      "Androidでアプリに戻った際、処理済みの共有が再度クリップされる問題を修正しました。",
-      "公式サイトのCloudflare手動デプロイ手順を明確にしました。@dkoryto (#604)。"
+      "Android と iOS で、プレビュー一覧から共有画像のフォントを選択でき、現在のテーマのフォントも確認できます。",
+      "ノート共有画像の書体、情報の階層、リッチコンテンツの表示を改善し、書籍抜粋テーマに温かい紙の背景を採用しました。新しい共有設定ではガラステーマを使い、ノートのタイトルを初期状態で非表示にします。",
+      "モバイルでノートを切り替えた後に画像の書き出しが停止する問題を修正し、Android の書き出し画像プレビューの解像度を維持します。",
+      "即刻のウェブクリッパーで、同じ投稿者の投稿を切り替えた際に本文とリンクが一致しない問題を修正しました。@sivdead に感謝します（#614、#615）。"
     ]
   }
 }

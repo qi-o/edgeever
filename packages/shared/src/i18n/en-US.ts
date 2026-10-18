@@ -2478,6 +2478,14 @@ export const enUS = {
         warm: "Warm",
       },
       fontStyle: "Typography",
+      templateFonts: {
+        puhui: "Alibaba PuHuiTi",
+        misans: "MiSans",
+        mincho: "Huiwen Mincho",
+        song: "Source Han Serif",
+        longcang: "Long Cang",
+        geist: "Geist Mono",
+      },
       fontStyles: {
         "source-han-serif": "Noto Serif SC",
         "anton": "Anton",
