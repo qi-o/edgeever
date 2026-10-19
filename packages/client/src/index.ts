@@ -112,6 +112,8 @@ export type EdgeEverClientOptions = {
   fetch?: typeof fetch;
   /** Native/desktop note AI and Agent calls the model API directly after a short prepare hop. */
   directAiGeneration?: boolean;
+  /** Decide native transport eligibility from key-free target metadata before preparing a generation. */
+  canDirectAiGeneration?: (target: import("@edgeever/shared").AiDirectTarget) => boolean | Promise<boolean>;
   /**
    * Browser-only: probe whether the model host allows CORS, then direct-connect.
    * Falls back to the instance proxy without using a prepared API key when CORS is blocked.
@@ -697,6 +699,18 @@ export const createEdgeEverClient = (options: EdgeEverClientOptions = {}) => {
     });
   };
 
+  const useDirectAiGeneration = async (signal?: AbortSignal) => {
+    signal?.throwIfAborted();
+    if (!options.canDirectAiGeneration) return true;
+    const { context, response } = await send("/api/v1/ai/direct-target", { signal });
+    if (response.status === 404 || response.status === 409) return false;
+    if (!response.ok) await throwRequestError(context, response);
+    const target = parseAiDirectTarget(await response.json());
+    const allowed = target !== null && await options.canDirectAiGeneration(target);
+    signal?.throwIfAborted();
+    return allowed;
+  };
+
   const runCompanionDirect = async (
     preparePath: string,
     payload: unknown,
@@ -719,6 +733,7 @@ export const createEdgeEverClient = (options: EdgeEverClientOptions = {}) => {
     };
 
     if (options.directAiGeneration) {
+      if (!await useDirectAiGeneration(streamOptions.signal)) return proxy();
       const prepared = await prepare();
       if (prepared) {
         await runPreparedCompanion(prepared, streamOptions);
@@ -773,7 +788,7 @@ export const createEdgeEverClient = (options: EdgeEverClientOptions = {}) => {
     recover?: (prepared: P) => Promise<T>;
   }): Promise<T> => {
     const attemptPrepare = async () => {
-      if (options.directAiGeneration) return args.prepare();
+      if (options.directAiGeneration) return await useDirectAiGeneration(args.signal) ? args.prepare() : null;
       if (!options.tryDirectAiGeneration) return null;
       const { context, response } = await send("/api/v1/ai/direct-target", { signal: args.signal });
       if (!response.ok) {
@@ -801,7 +816,7 @@ export const createEdgeEverClient = (options: EdgeEverClientOptions = {}) => {
     try {
       return await args.run(prepared);
     } catch (error) {
-      if (!isAiCorsFailure(error)) throw error;
+      if (options.directAiGeneration || !isAiCorsFailure(error)) throw error;
       return args.recover ? args.recover(prepared) : args.proxy();
     }
   };
@@ -1257,6 +1272,7 @@ export const createEdgeEverClient = (options: EdgeEverClientOptions = {}) => {
       };
 
       if (options.directAiGeneration) {
+        if (!await useDirectAiGeneration(streamOptions.signal)) return proxyGenerate();
         if (await prepareAndDirect()) return;
         await proxyGenerate();
         return;

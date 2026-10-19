@@ -56,7 +56,7 @@ import { normalizeUpdateProgress } from "./update-progress.mjs";
 import { inspectWindowsTaskbarShortcuts } from "./windows-taskbar-diagnostics.mjs";
 import { testPicGoConnection, createPicGoUploadQueue } from "./picgo.mjs";
 import { createPluginPublicNetworkRuntime } from "./plugin-public-network.mjs";
-import { createAiDirectRuntime } from "./ai-direct.mjs";
+import { canUseAiProviderUrl, createAiDirectRuntime } from "./ai-direct.mjs";
 import { createAcpPathStore, validateTrustedAcpPath } from "./acp-path-store.mjs";
 import { createAcpHostRuntime, registerAcpIpc } from "./acp-host.mjs";
 import { shouldQuitAfterAllWindowsClosed } from "./window-lifecycle.mjs";
@@ -1813,6 +1813,10 @@ const startApplication = async () => {
   });
   ipcMain.on("desktop:cancel-public-network-fetch", (event, requestId) => {
     if (event.sender === mainWindow?.webContents && typeof requestId === "string") pluginPublicNetwork.cancel(requestId);
+  });
+  ipcMain.handle("desktop:ai-direct-check", async (event, url) => {
+    if (event.sender !== mainWindow?.webContents) throw new Error("AI provider requests must come from the main window");
+    return canUseAiProviderUrl(url);
   });
   ipcMain.handle("desktop:ai-direct-open", async (event, requestId, input) => {
     if (event.sender !== mainWindow?.webContents) throw new Error("AI provider requests must come from the main window");
