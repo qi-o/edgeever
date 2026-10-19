@@ -107,3 +107,7 @@ bun run start:self-hosted
 
 The implementation uses `@aws-sdk/client-s3` and does not load that SDK in the
 Cloudflare Worker entrypoint.
+
+## AI model requests
+
+All AI model API requests originate from the client, including note generation, conversations, tag suggestions, discoveries, infographics, connection tests, model listing, and extension video summaries. The backend only prepares credentials/context, executes workspace tools, and saves results. Legacy server-generation endpoints return HTTP 410 and require a client update. Upgrade clients and the Web Clipper alongside the instance. Browser model endpoints must allow CORS; private endpoints must be reachable from the client (for example, over a VPN). The extension asks for permission to access the configured model host. Network or permission failures never fall back to server-side generation.

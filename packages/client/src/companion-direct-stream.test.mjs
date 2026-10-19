@@ -104,43 +104,12 @@ describe("direct companion client", () => {
     expect(events.some((event) => event.type === "start")).toBe(true);
   });
 
-  test("probes CORS and stays on the instance proxy without downloading the API key", async () => {
-    const urls = [];
-    const client = createEdgeEverClient({
-      baseUrl: "https://notes.example",
-      tryDirectAiGeneration: true,
-      fetch: async (url, init) => {
-        urls.push({ url: String(url), method: init?.method ?? "GET" });
-        if (String(url).endsWith("/direct-target")) {
-          return new Response(JSON.stringify({
-            provider: "openai-compatible",
-            baseUrl: "https://integrate.api.nvidia.com/v1",
-            modelId: "meta/llama",
-          }), { headers: { "content-type": "application/json" } });
-        }
-        if (String(url).includes("integrate.api.nvidia.com")) {
-          expect(init?.method).toBe("POST");
-          expect(new Headers(init?.headers).get("Authorization")).toBe("Bearer edgeever-cors-probe");
-          throw new TypeError("Failed to fetch");
-        }
-        return new Response("data: {\"type\":\"text-delta\",\"text\":\"proxied\"}\n\n", {
-          headers: { "content-type": "text/event-stream" },
-        });
-      },
-    });
-    const events = [];
-    await client.streamCompanion(
-      { id: preparedTurn.turn.id, threadId: preparedTurn.turn.threadId, message: "hi" },
-      { onEvent: (event) => events.push(event) },
-    );
-    expect(urls.map((call) => call.url)).toEqual([
-      "https://notes.example/api/v1/ai/direct-target",
-      "https://integrate.api.nvidia.com/v1/chat/completions",
-      "https://notes.example/api/v1/companion/turns",
-    ]);
-    expect(urls.some((call) => call.url.endsWith("/prepare"))).toBe(false);
-    expect(events).toEqual([{ type: "text-delta", text: "proxied" }]);
-  });
+  test("browser companion reports network failure without instance fallback", async () => {
+ const paths=[];let calls=0;
+ const client=createEdgeEverClient({tryDirectAiGeneration:true,fetch:async url=>{paths.push(String(url));return Response.json(preparedTurn);},providerFetch:async()=>{calls++;throw new TypeError("Failed to fetch");}});
+ await expect(client.streamCompanion({id:preparedTurn.turn.id,message:"hi"},{onEvent(){}})).rejects.toThrow("Failed to fetch");
+ expect(paths).toEqual(["/api/v1/companion/turns/prepare"]);expect(calls).toBe(1);
+});
 });
 
 test("direct provider rejection includes safe diagnostics and completes the failed turn once", async () => {

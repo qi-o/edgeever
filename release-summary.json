@@ -1,35 +1,20 @@
 {
-  "version": "1.125.0",
+  "version": "2.0.0",
   "changes": {
     "en-US": [
-      "Support SVG image uploads, previews, and sharing.",
-      "Improve AI poster template selection, speed up template thumbnails, and allow retrying failed previews.",
-      "Fix consecutive mobile shares being combined into one note and Android image export failures for filenames containing brackets.",
-      "Fix keyboard shortcut switching between source and rich-text editor modes. Thanks to @sivdead (#623).",
-      "Fix extra brackets and long links beside clipped Substack images and improve GitHub repository metadata capture. Update the clipper extension and re-clip Substack articles to apply the fix. Thanks to @sivdead (#618).",
-      "Fix desktop access to AI models on the server local network by routing models restricted from direct access through the instance server. Thanks to @sivdead (#624).",
-      "Keep note context menus within the window boundaries.",
-      "Fix Markdown line breaks in untouched initial welcome notes."
+      "AI requests now run directly on every client, including model tests, infographics and video summaries. Upgrade clients and Web Clipper before the instance; server generation fallback has been removed. Browser endpoints must allow CORS and private models must be reachable from the client. Older iOS tag suggestions require the updated App Store app.",
+      "Fix new table forms not being published when opened, so they can immediately collect submissions.",
+      "Fix backup counts incorrectly treating Markdown attachments as notes."
     ],
     "zh-CN": [
-      "支持 SVG 图片上传、预览和分享。",
-      "改进 AI 海报模板选择，加快模板缩略图加载，并支持加载失败后重试。",
-      "修复移动端连续分享混入同一笔记的问题，以及 Android 图片导出文件名含方括号时的失败。",
-      "修复编辑器源码与富文本模式的快捷键往返切换。感谢 @sivdead（#623）。",
-      "修复 Substack 剪藏图片旁多余括号和长链接，以及 GitHub 仓库信息提取；Substack 修复需更新剪藏扩展后重新剪藏。感谢 @sivdead（#618）。",
-      "修复桌面端无法调用服务器局域网 AI 模型的问题，受直连限制的模型改由实例服务器调用。感谢 @sivdead（#624）。",
-      "修复笔记右键菜单超出窗口边界的问题。",
-      "修复未编辑的初始欢迎笔记中 Markdown 换行显示异常。"
+      "所有平台的 AI 功能统一客户端直连，支持桌面端访问可达的内网模型，不再由实例服务器代调。请先升级客户端及 Web Clipper，再升级实例；浏览器模型端点须允许 CORS，内网模型须从客户端可达。旧版 iOS 标签建议需升级商店新版后恢复。",
+      "修复新建表格表单打开后未自动发布、无法立即收集提交的问题。",
+      "修复备份统计将 Markdown 附件误计为笔记的问题。"
     ],
     "ja": [
-      "SVG 画像のアップロード、プレビュー、共有に対応しました。",
-      "AI によるポスターテンプレート選択を改善し、サムネイルの表示を高速化しました。読み込み失敗時に再試行できます。",
-      "モバイルで連続共有した内容が同じノートに混在する問題と、Android で角括弧を含む画像ファイル名の書き出し失敗を修正しました。",
-      "ソースとリッチテキスト間のショートカット切り替えを修正しました。@sivdead さんに感謝します（#623）。",
-      "Substack のクリップ画像横に余分な括弧と長いリンクが出る問題と、GitHub リポジトリ情報の取得を修正しました。Substack の修正には拡張機能の更新と再クリップが必要です。@sivdead さんに感謝します（#618）。",
-      "デスクトップからサーバーのローカルネットワーク上の AI モデルを利用できない問題を修正し、直接アクセスが制限されるモデルはインスタンスサーバー経由で呼び出します。@sivdead さんに感謝します（#624）。",
-      "ノートのコンテキストメニューがウィンドウの外にはみ出す問題を修正しました。",
-      "未編集の初期ウェルカムノートで Markdown の改行が正しく表示されない問題を修正しました。"
+      "すべての AI 呼び出しをクライアントからの直接接続に統一しました。インスタンスより先にクライアントと Web Clipper を更新してください。ブラウザーのモデルサービスは CORS の許可が必要で、内部ネットワークのモデルには端末から接続できる必要があります。旧 iOS アプリのタグ提案は App Store の新版への更新が必要です。",
+      "新しいテーブルフォームを開いたときに自動公開されず、すぐに回答を受け付けられない問題を修正しました。",
+      "バックアップ件数で Markdown 添付ファイルをノートとして数えてしまう問題を修正しました。"
     ]
   }
 }

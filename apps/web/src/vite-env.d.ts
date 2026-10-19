@@ -48,7 +48,6 @@ interface EdgeEverDesktopBridge {
   }): Promise<{ url: string } | { fallback: true }>;
   publicNetworkFetch(requestId: string, input: import("@edgeever/shared").PluginPublicFetchRequest): Promise<import("@edgeever/shared").PluginPublicFetchResponse>;
   cancelPublicNetworkFetch(requestId: string): Promise<void>;
-  canUseAiProviderUrl?(url: string): Promise<boolean>;
   openAiProviderStream(requestId: string, input: {
     url: string;
     method?: string;
