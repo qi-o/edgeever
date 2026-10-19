@@ -1304,7 +1304,10 @@ function LocalTiptapEditorImpl(props: LocalTiptapEditorProps) {
       document.body.appendChild(host);
 
       try {
+        await notify({ type: "font-status", status: "loading" });
         const assets = await prepareNoteImageAssets({ theme: resolvedTheme, fontStyle, text: [request.title, request.notebook, ...(request.tags || []), request.updatedAt, bodyHtml].join(" "), urls: noteImageAssetUrls });
+        await notify({ type: "font-status", status: assets.fontFallback ? "fallback" : "ready" });
+        void assets.fontsReady?.then(() => notify({ type: "fonts-ready" }), () => {}).catch(() => {});
         style.textContent = assets.css + generateCardCss({ theme: resolvedTheme, fontStyle, fontSize, cardWidth });
         const images = Array.from(documentRoot.querySelectorAll<HTMLImageElement>("img"));
         await Promise.race([
@@ -1396,6 +1399,7 @@ function LocalTiptapEditorImpl(props: LocalTiptapEditorProps) {
         }
         await notify({
           type: "complete",
+          fontFallback: assets.fontFallback,
           filename,
           mimeType,
           width: canvas.width,

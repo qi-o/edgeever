@@ -1,23 +1,17 @@
 {
-  "version": "1.123.0",
+  "version": "1.124.0",
   "changes": {
     "en-US": [
-      "Choose image-sharing fonts from a preview list on Android and iOS, with the current theme font shown clearly.",
-      "Improve shared note images with theme-appropriate typography, clearer rich content, a warm book-excerpt background, and cleaner signatures. New image-sharing preferences use the glass theme and hide the note title by default.",
-      "Fix image exports stalling after navigating between notes on mobile and preserve full-resolution exported image previews on Android.",
-      "Fix Jike Web Clipper captures mixing post content and source links when switching between posts by the same author. Thanks to @sivdead (#614, #615)."
+      "Android now supports Google Play in-app updates with background downloads and confirmation before installation, while keeping manual update options available.",
+      "Improve startup speed and reduce bundled font size. Optional fonts download when needed, with consistent loading and fallback messages and reliable font restoration after retrying."
     ],
     "zh-CN": [
-      "Android 和 iOS 支持通过预览列表选择分享图片字体，并清晰显示当前主题字体。",
-      "优化笔记分享图片的主题字体、内容层次和富文本呈现，书摘主题采用暖纸背景，签名更简洁；新的图片分享偏好默认使用毛玻璃主题并隐藏笔记标题。",
-      "修复移动端切换笔记后图片导出卡住的问题，并保留 Android 导出图片预览的完整分辨率。",
-      "修复即刻网页剪藏在同一作者的帖子之间切换时正文与来源链接错配的问题。感谢 @sivdead（#614、#615）。"
+      "Android 新增 Google Play 应用内更新，支持后台下载并在安装前确认，同时保留手动更新入口。",
+      "优化启动速度并缩减内置字体体积；可选字体按需下载，统一加载与回退提示，并修复重试后字体恢复及模板字体回退显示。"
     ],
     "ja": [
-      "Android と iOS で、プレビュー一覧から共有画像のフォントを選択でき、現在のテーマのフォントも確認できます。",
-      "ノート共有画像の書体、情報の階層、リッチコンテンツの表示を改善し、書籍抜粋テーマに温かい紙の背景を採用しました。新しい共有設定ではガラステーマを使い、ノートのタイトルを初期状態で非表示にします。",
-      "モバイルでノートを切り替えた後に画像の書き出しが停止する問題を修正し、Android の書き出し画像プレビューの解像度を維持します。",
-      "即刻のウェブクリッパーで、同じ投稿者の投稿を切り替えた際に本文とリンクが一致しない問題を修正しました。@sivdead に感謝します（#614、#615）。"
+      "Android で Google Play のアプリ内更新に対応しました。バックグラウンドでダウンロードし、インストール前に確認できます。手動更新も引き続き利用できます。",
+      "起動を高速化し、同梱フォントの容量を削減しました。追加フォントは必要に応じてダウンロードされ、読み込みや代替フォントの案内を統一し、再試行後のフォント復元とテンプレートの代替表示を改善しました。"
     ]
   }
 }

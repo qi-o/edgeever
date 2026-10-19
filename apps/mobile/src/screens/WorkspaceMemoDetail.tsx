@@ -62,9 +62,12 @@ const IMAGE_EXPORT_TIMEOUT_MS = 60_000;
 
 type MobileImageExportEvent =
   | { type: "chunk"; requestId: string; chunk: string }
+  | { type: "font-status"; requestId: string; status: "loading" | "fallback" | "ready" }
+  | { type: "fonts-ready"; requestId: string }
   | { type: "progress"; requestId: string; stage: "prepare" | "render" | "transfer"; elapsedMs?: number }
   | {
       type: "complete";
+      fontFallback?: boolean;
       requestId: string;
       filename: string;
       mimeType: string;
@@ -76,6 +79,7 @@ type MobileImageExportEvent =
   | { type: "error"; requestId: string; message?: string };
 
 type MobilePreparedNoteImage = {
+  fontFallback: boolean;
   failedImages: number;
   filename: string;
   height: number;
@@ -517,6 +521,8 @@ export const MemoDetailModal = ({
   const [viewerReady, setViewerReady] = useState(false);
   const [titleCollapsed, setTitleCollapsed] = useState(false);
   const [isExportingImage, setIsExportingImage] = useState(false);
+  const [imageFontStatus, setImageFontStatus] = useState<"loading" | "fallback" | "ready">("ready");
+  const imageFontRecoveryRef = useRef<{ requestId: string; ready: boolean; complete: boolean; retry: () => void } | null>(null);
   const [imageExportStage, setImageExportStage] = useState<"prepare" | "render" | "transfer">("prepare");
   const [imageShareOptionsOpen, setImageShareOptionsOpen] = useState(false);
   const [imageShareFontPickerOpen, setImageShareFontPickerOpen] = useState(false);
@@ -760,12 +766,22 @@ export const MemoDetailModal = ({
   }, [imageShareFromList, memo, viewerReady, visible]);
 
   const closeImageShareOptions = () => {
+    imageFontRecoveryRef.current = null;
+    clearImageExportTimeout();
+    imageExportRequestRef.current = null;
+    imageExportChunksRef.current = [];
+    setIsExportingImage(false);
     setImageShareFontPickerOpen(false);
     setImageShareOptionsOpen(false);
     if (imageShareFromList) onClose();
   };
 
   const closeImagePreview = () => {
+    imageFontRecoveryRef.current = null;
+    clearImageExportTimeout();
+    imageExportRequestRef.current = null;
+    imageExportChunksRef.current = [];
+    setIsExportingImage(false);
     setPreparedNoteImage(null);
     setImageShareOptionsOpen(false);
     if (imageShareFromList) {
@@ -872,12 +888,22 @@ export const MemoDetailModal = ({
 
   useEffect(() => clearImageExportTimeout, [clearImageExportTimeout]);
 
+  useEffect(() => {
+    imageFontRecoveryRef.current = null;
+    clearImageExportTimeout();
+    imageExportRequestRef.current = null;
+    imageExportChunksRef.current = [];
+    setIsExportingImage(false);
+    setPreparedNoteImage(null);
+  }, [memo?.id, clearImageExportTimeout]);
+
   useEffect(() => () => {
     if (savedImageTipTimerRef.current !== null) clearTimeout(savedImageTipTimerRef.current);
   }, []);
 
   useEffect(() => {
     if (visible) return;
+    imageFontRecoveryRef.current = null;
     clearImageExportTimeout();
     imageExportRequestRef.current = null;
     imageExportChunksRef.current = [];
@@ -916,7 +942,16 @@ export const MemoDetailModal = ({
     } catch {
       return;
     }
+    if (event.type === "fonts-ready") {
+      const recovery = imageFontRecoveryRef.current;
+      if (recovery?.requestId === event.requestId) {
+        recovery.ready = true;
+        if (recovery.complete) recovery.retry();
+      }
+      return;
+    }
     if (!event.requestId || event.requestId !== imageExportRequestRef.current) return;
+    if (event.type === "font-status") { setImageFontStatus(event.status); return; }
     if (event.type === "progress") {
       console.info(`[EdgeEverImageExport] ${event.stage}=${event.elapsedMs ?? 0}ms`);
       setImageExportStage(event.stage);
@@ -942,6 +977,7 @@ export const MemoDetailModal = ({
       file.create({ overwrite: true, intermediates: true });
       file.write(decodeBase64Chunks(imageExportChunksRef.current));
       const prepared: MobilePreparedNoteImage = {
+        fontFallback: event.fontFallback === true,
         failedImages: event.failedImages ?? 0,
         filename: event.filename,
         height: event.height ?? 0,
@@ -950,7 +986,7 @@ export const MemoDetailModal = ({
         uri: file.uri,
         width: event.width ?? 0,
       };
-      if (imageExportIntentRef.current === "preview") {
+      if (imageExportIntentRef.current === "preview" || prepared.fontFallback) {
         setPreparedNoteImage(prepared);
       } else {
         setIsExportingImage(false);
@@ -969,6 +1005,13 @@ export const MemoDetailModal = ({
       imageExportChunksRef.current = [];
       imageExportRequestRef.current = null;
       setIsExportingImage(false);
+      const recovery = imageFontRecoveryRef.current;
+      if (recovery?.requestId === event.requestId) {
+        recovery.complete = event.fontFallback === true;
+        if (recovery.complete && recovery.ready) setTimeout(() => {
+          if (imageFontRecoveryRef.current === recovery) recovery.retry();
+        }, 0);
+      }
     }
   }, [clearImageExportTimeout, failImageExport, resolvedLocale]);
 
@@ -986,8 +1029,8 @@ export const MemoDetailModal = ({
       showBranding?: boolean;
       intent?: "preview" | "share";
     } = {},
-  ) => {
-    if (!memo || !viewerReady || isExportingImage) return;
+  ): void => {
+    if (!memo || !viewerReady || isExportingImage || imageExportRequestRef.current !== null) return;
     const viewer = viewerRef.current;
     if (!viewer) {
       failImageExport(resolvedLocale !== "zh-CN" ? "The note viewer is not ready. Try again." : "笔记尚未准备好，请重试。");
@@ -997,6 +1040,9 @@ export const MemoDetailModal = ({
     imageExportRequestRef.current = requestId;
     imageExportChunksRef.current = [];
     imageExportIntentRef.current = options.intent ?? "share";
+    imageFontRecoveryRef.current = { requestId, ready: false, complete: false,
+      retry: () => exportMemoImage(format, { ...options, intent: "preview" }) };
+    setImageFontStatus("loading");
     setImageExportStage("prepare");
     setIsExportingImage(true);
     imageExportTimeoutRef.current = setTimeout(() => {
@@ -1599,6 +1645,16 @@ export const MemoDetailModal = ({
                     : null,
                 ]}
               />
+              {preparedNoteImage.fontFallback || isExportingImage ? (
+                <View accessibilityLiveRegion="polite">
+                  <Text style={imageShareStyles.previewWarning}>{resolvedLocale === "zh-CN"
+                    ? isExportingImage ? "字体加载中…" : "暂时使用替代字体，加载成功后将自动恢复"
+                    : isExportingImage ? "Loading font…" : "Temporarily using substitute fonts. The original fonts will be restored automatically when loaded."}</Text>
+                  {!isExportingImage ? <Pressable accessibilityRole="button" onPress={() => imageFontRecoveryRef.current?.retry()} style={imageShareStyles.previewSecondaryButton}>
+                    <Text>{resolvedLocale === "zh-CN" ? "重试" : "Retry"}</Text>
+                  </Pressable> : null}
+                </View>
+              ) : null}
               {preparedNoteImage.failedImages > 0 ? (
                 <Text style={imageShareStyles.previewWarning}>
                   {resolvedLocale !== "zh-CN"
@@ -1793,7 +1849,7 @@ export const MemoDetailModal = ({
                   {isExportingImage ? <ActivityIndicator color="#ffffff" size="small" /> : <Share2 color="#ffffff" size={18} />}
                   <Text style={imageShareStyles.shareButtonText}>
                     {isExportingImage
-                      ? (imageExportStage === "render"
+                      ? (imageFontStatus === "loading" ? (resolvedLocale === "zh-CN" ? "字体加载中…" : "Loading font…") : imageExportStage === "render"
                         ? (resolvedLocale !== "zh-CN" ? "Rendering image…" : "正在渲染图片…")
                         : imageExportStage === "transfer"
                           ? (resolvedLocale !== "zh-CN" ? "Saving preview…" : "正在保存预览…")
