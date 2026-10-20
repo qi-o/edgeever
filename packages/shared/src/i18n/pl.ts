@@ -353,6 +353,8 @@ export const pl = {
     "providerRateLimited": "Dostawca modelu ograniczył liczbę żądań. Odczekaj chwilę i spróbuj ponownie.",
     "providerRequestRejected": "Domyślny model odrzucił to żądanie. Upewnij się, że obsługuje wywoływanie narzędzi, lub wybierz inny model domyślny.",
     "failureDetails": {
+      "timeout": "Upłynął limit czasu żądania modelu. Spróbuj ponownie później; jeśli problem się powtarza, sprawdź usługę modelu i serwer proxy.",
+      "server": "Usługa modelu zwróciła błąd serwera. Spróbuj ponownie później; jeśli problem się powtarza, sprawdź status dostawcy.",
       "http": "Żądanie zostało odrzucone. Sprawdź adres dostawcy, identyfikator modelu i obsługiwane funkcje.",
       "network": "To urządzenie nie może połączyć się bezpośrednio z usługą modelu. Sprawdź adres i sieć. Dostęp z przeglądarki wymaga też zezwolenia na CORS po stronie usługi modelu.",
       "invalidResponse": "Dostawca zwrócił niezgodną odpowiedź. Sprawdź protokół API i obsługę strumieniowania.",

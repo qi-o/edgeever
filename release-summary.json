@@ -1,20 +1,17 @@
 {
-  "version": "2.0.0",
+  "version": "2.0.1",
   "changes": {
     "en-US": [
-      "AI requests now run directly on every client, including model tests, infographics and video summaries. Upgrade clients and Web Clipper before the instance; server generation fallback has been removed. Browser endpoints must allow CORS and private models must be reachable from the client. Older iOS tag suggestions require the updated App Store app.",
-      "Fix new table forms not being published when opened, so they can immediately collect submissions.",
-      "Fix backup counts incorrectly treating Markdown attachments as notes."
+      "Restore server fallback when Web model requests fail because of browser network or CORS restrictions; desktop and native mobile clients continue to connect directly.",
+      "Show clearer AI companion errors for model timeouts and service failures instead of describing them as rejected requests."
     ],
     "zh-CN": [
-      "所有平台的 AI 功能统一客户端直连，支持桌面端访问可达的内网模型，不再由实例服务器代调。请先升级客户端及 Web Clipper，再升级实例；浏览器模型端点须允许 CORS，内网模型须从客户端可达。旧版 iOS 标签建议需升级商店新版后恢复。",
-      "修复新建表格表单打开后未自动发布、无法立即收集提交的问题。",
-      "修复备份统计将 Markdown 附件误计为笔记的问题。"
+      "修复 Web 端因浏览器网络或 CORS 限制导致模型请求失败时的后端兜底；桌面端及原生移动端继续直连模型服务。",
+      "优化 AI 伙伴错误提示，准确区分模型超时、服务异常与请求被拒绝。"
     ],
     "ja": [
-      "すべての AI 呼び出しをクライアントからの直接接続に統一しました。インスタンスより先にクライアントと Web Clipper を更新してください。ブラウザーのモデルサービスは CORS の許可が必要で、内部ネットワークのモデルには端末から接続できる必要があります。旧 iOS アプリのタグ提案は App Store の新版への更新が必要です。",
-      "新しいテーブルフォームを開いたときに自動公開されず、すぐに回答を受け付けられない問題を修正しました。",
-      "バックアップ件数で Markdown 添付ファイルをノートとして数えてしまう問題を修正しました。"
+      "Web のモデルリクエストがブラウザーのネットワークまたは CORS 制限で失敗した際のサーバーフォールバックを修復しました。デスクトップとネイティブモバイルは引き続き直接接続します。",
+      "AI コンパニオンのエラー表示を改善し、モデルのタイムアウト、サービス障害、リクエスト拒否を区別します。"
     ]
   }
 }

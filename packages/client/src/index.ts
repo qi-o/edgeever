@@ -85,8 +85,10 @@ export type EdgeEverClientOptions = {
   fetch?: typeof fetch;
   /** @deprecated All AI generation now uses client-direct transport. */
   directAiGeneration?: boolean;
-  /** @deprecated All AI generation now uses client-direct transport, without proxy fallback. */
+  /** @deprecated Use allowAiServerFallback for browser transports. */
   tryDirectAiGeneration?: boolean;
+  /** Web only: retry initial network/CORS failures through the instance. */
+  allowAiServerFallback?: boolean;
   /** Used only for the model provider request; defaults to `fetch`. */
   providerFetch?: typeof fetch;
   beforeRequest?: (context: EdgeEverClientRequestContext) => void | Promise<void>;
@@ -349,7 +351,25 @@ export type { SyncBootstrapResponse, SyncChangesResponse };
 
 export const createEdgeEverClient = (options: EdgeEverClientOptions = {}) => {
   const getFetch = () => options.fetch ?? globalThis.fetch;
-  const providerFetch = (): typeof fetch => (url, init) => (options.providerFetch ?? getFetch())(url, { ...init, credentials: "omit", redirect: "error" });
+  const providerFetch = (): typeof fetch => async (url, init) => {
+    const directFetch = options.providerFetch ?? getFetch();
+    if (!options.allowAiServerFallback) return directFetch(url, { ...init, credentials: "omit", redirect: "error" });
+    const { fetchAiWithServerFallback } = await import("./ai-provider-relay");
+    return fetchAiWithServerFallback(url, init, directFetch, async target => {
+      const { response } = await send("/api/v1/ai/provider-relay", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/octet-stream",
+          "x-edgeever-ai-target": target.url,
+          "x-edgeever-ai-method": target.method,
+          "x-edgeever-ai-headers": JSON.stringify(Object.fromEntries(target.headers)),
+        },
+        body: target.method === "GET" ? undefined : await target.arrayBuffer(),
+        signal: target.signal,
+      });
+      return response;
+    });
+  };
   const getBaseUrl = () => normalizeBaseUrl(
     typeof options.baseUrl === "function" ? options.baseUrl() : options.baseUrl,
   );
@@ -697,6 +717,7 @@ export const createEdgeEverClient = (options: EdgeEverClientOptions = {}) => {
   const pluginCapabilities = createPluginCapabilities(request, requestPluginPublic);
 
   return {
+    fetchAiProvider: providerFetch(),
     getInstanceHealth: () => request<InstanceHealth>("/api/health"),
     ...pluginCapabilities,
     pluginAi: {

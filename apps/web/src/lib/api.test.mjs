@@ -174,20 +174,18 @@ describe("desktop AI routing", () => {
         throw new Error(`Unexpected request: ${path}`);
       };
       const received = [];
-      const requestFailure = status === "network";
       const streamOptions = { onEvent: event => received.push(event) };
       const generation = operation === "new"
         ? api.streamCompanion({ id: turn.id, message: "hi" }, streamOptions)
         : api.resumeCompanionTurn(turn.id, { answers: [] }, streamOptions);
-      if (requestFailure) await expect(generation).rejects.toThrow(/NetworkError/);
-      else await generation;
+      await generation;
       expect(paths).toEqual([
         preparePath,
-        ...(requestFailure ? [] : [`/api/v1/companion/turns/${turn.id}/complete`]),
+        `/api/v1/companion/turns/${turn.id}/complete`,
       ]);
       expect(providerAuth).toEqual(["Bearer provider-key"]);
-      expect(completed).toHaveLength(requestFailure ? 0 : 1);
-      if (!requestFailure) expect(completed[0].status).toBe(status === 200 ? "completed" : "failed");
+      expect(completed).toHaveLength(1);
+      expect(completed[0].status).toBe(status === 200 ? "completed" : "failed");
       if (status === 200) expect(received).toContainEqual({ type: "text-delta", text: "direct reply" });
       else if (status === "stream-network") expect(received).toContainEqual({ type: "text-delta", text: "partial reply" });
       else if (status === 401) expect(received.at(-1)).toMatchObject({ type: "error", code: "ai_credentials_rejected" });

@@ -105,11 +105,43 @@ describe("direct companion client", () => {
   });
 
   test("browser companion reports network failure without instance fallback", async () => {
- const paths=[];let calls=0;
- const client=createEdgeEverClient({tryDirectAiGeneration:true,fetch:async url=>{paths.push(String(url));return Response.json(preparedTurn);},providerFetch:async()=>{calls++;throw new TypeError("Failed to fetch");}});
- await expect(client.streamCompanion({id:preparedTurn.turn.id,message:"hi"},{onEvent(){}})).rejects.toThrow("Failed to fetch");
- expect(paths).toEqual(["/api/v1/companion/turns/prepare"]);expect(calls).toBe(1);
-});
+    const paths = [];
+    const completions = [];
+    const events = [];
+    let calls = 0;
+    const client = createEdgeEverClient({
+      fetch: async (url, init) => {
+        paths.push(String(url));
+        if (String(url).endsWith("/prepare")) return Response.json(preparedTurn);
+        if (String(url).endsWith("/complete")) {
+          const completion = JSON.parse(init.body);
+          completions.push(completion);
+          return Response.json({ turn: { ...preparedTurn.turn, ...completion } });
+        }
+        throw new Error(`Unexpected instance request: ${url}`);
+      },
+      providerFetch: async () => {
+        calls++;
+        throw new TypeError("Failed to fetch");
+      },
+    });
+    await client.streamCompanion(
+      { id: preparedTurn.turn.id, message: "hi" },
+      { onEvent: event => events.push(event) },
+    );
+    expect(paths).toEqual([
+      "/api/v1/companion/turns/prepare",
+      `/api/v1/companion/turns/${preparedTurn.turn.id}/complete`,
+    ]);
+    expect(calls).toBe(1);
+    expect(completions).toHaveLength(1);
+    expect(completions[0].status).toBe("failed");
+    expect(events.at(-1)).toEqual({
+      type: "error",
+      code: "companion_generation_failed",
+      diagnostics: { reason: "network" },
+    });
+  });
 });
 
 test("direct provider rejection includes safe diagnostics and completes the failed turn once", async () => {
@@ -132,4 +164,31 @@ test("direct provider rejection includes safe diagnostics and completes the fail
     expect(JSON.stringify(events)).not.toContain("private-note");
     expect(log).not.toHaveBeenCalled();
   } finally { log.mockRestore(); }
+});
+
+test("browser fallback continues the same prepared turn and completes the streamed reply", async () => {
+  const paths = []; const events = []; let providerCalls = 0;
+  const client = createEdgeEverClient({
+    allowAiServerFallback: true,
+    fetch: async (url, init) => {
+      const path = String(url); paths.push(path);
+      if (path.endsWith("/prepare")) return Response.json(preparedTurn);
+      if (path.endsWith("/provider-relay")) {
+        expect(new Headers(init.headers).get("x-edgeever-ai-target")).toBe(preparedTurn.baseUrl + "/chat/completions");
+        return new Response('data: {"choices":[{"delta":{"content":"Relayed reply"}}]}\n\ndata: {"choices":[{"delta":{},"finish_reason":"stop"}]}\n\ndata: [DONE]\n\n', { headers: { "content-type": "text/event-stream" } });
+      }
+      if (path.endsWith("/complete")) {
+        const body = JSON.parse(init.body);
+        expect(body.status).toBe("completed"); expect(body.response).toBe("Relayed reply");
+        return Response.json({ turn: { ...preparedTurn.turn, ...body } });
+      }
+      throw Error("Unexpected instance request");
+    },
+    providerFetch: async () => { providerCalls++; throw new TypeError("Failed to fetch"); },
+  });
+  await client.streamCompanion({ id: preparedTurn.turn.id, message: "hi" }, { onEvent: event => events.push(event) });
+  expect(paths).toEqual(["/api/v1/companion/turns/prepare", "/api/v1/ai/provider-relay", `/api/v1/companion/turns/${preparedTurn.turn.id}/complete`]);
+  expect(providerCalls).toBe(1);
+  expect(events).toContainEqual({ type: "text-delta", text: "Relayed reply" });
+  expect(events.at(-1)).toMatchObject({ type: "done", turn: { id: preparedTurn.turn.id, status: "completed" } });
 });

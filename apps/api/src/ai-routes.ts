@@ -57,6 +57,7 @@ import {
 import { encryptSecret } from "./secret-encryption";
 import { listTagSummaries } from "./tag-service";
 import { prepareNoteResourceTranscription } from "./resource-transcription";
+import { registerAiProviderRelay } from "./ai-provider-relay";
 
 type AiRouteDependencies = {
   isDemoMode: (environment: Bindings) => boolean;
@@ -215,6 +216,7 @@ const resolveAiGenerateFields = async (context: AppContext, input: {
 };
 
 export const registerAiRoutes = (app: Hono<AppEnv>, dependencies: AiRouteDependencies) => {
+  registerAiProviderRelay(app);
   app.get("/api/v1/ai/settings", async (context) => {
     const denied = requireUser(context);
     if (denied) return denied;
@@ -934,6 +936,6 @@ export const registerAiRoutes = (app: Hono<AppEnv>, dependencies: AiRouteDepende
   });
   for (const path of OLD_AI_GENERATION_PATHS) app.post(path, context => {
     const denied = requireScopes(context, "ai:generate"); if (denied) return denied;
-    return apiError(context, "ai_client_required", "AI requires a client update. Model requests must be sent directly from the client.", 410);
+    return apiError(context, "ai_client_required", "Update the client to use prepared AI requests.", 410);
   });
 };

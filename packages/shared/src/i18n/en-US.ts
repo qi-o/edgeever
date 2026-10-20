@@ -364,6 +364,8 @@ export const enUS = {
     "providerRateLimited": "The model provider rate-limited this request. Wait a moment and try again.",
     "providerRequestRejected": "The default model rejected this request. Confirm it supports tool calling, or choose a different default model.",
     "failureDetails": {
+      "timeout": "The model request timed out. Try again later; if it persists, check the model service and network proxy.",
+      "server": "The model service returned a server error. Try again later; if it persists, check the provider status.",
       "http": "The request was rejected. Check the provider URL, model ID, and supported request features.",
       "network": "This device could not connect directly to the model service. Check the URL and network. Browser access also requires the model service to allow CORS.",
       "invalidResponse": "The provider returned an incompatible response. Check the selected API protocol and streaming support.",

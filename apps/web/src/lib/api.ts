@@ -323,9 +323,9 @@ const desktopAiDirectEnabled = Boolean(
   || (typeof window !== "undefined" && window.edgeeverDesktop?.openAiProviderStream),
 );
 
-/** Direct client-to-provider transport. Browser CORS failures are surfaced to the caller. */
+/** Native clients connect directly; Web can relay initial network/CORS failures. */
 export const directProviderFetch: typeof fetch = (input, init) =>
-  desktopAiDirectEnabled ? desktopProviderFetch(input, init) : fetch(input, init);
+  client.fetchAiProvider(input, init);
 
 const client = createEdgeEverClient({
   baseUrl: getConfiguredDesktopApiBaseUrl,
@@ -334,6 +334,7 @@ const client = createEdgeEverClient({
   shouldAttachToken: (path) => path !== "/api/v1/auth/login",
   onUnauthorized: handleUnauthorized,
   directAiGeneration: desktopAiDirectEnabled,
+  allowAiServerFallback: !desktopAiDirectEnabled,
   providerFetch: desktopAiDirectEnabled ? desktopProviderFetch : undefined,
 });
 
